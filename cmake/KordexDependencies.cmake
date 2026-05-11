@@ -12,155 +12,123 @@
 
 set(KORDEX_DEPENDENCIES_INCLUDED ON)
 
-include(FetchContent)
+# --------------------------------------------------------------------
+# Local dependency root
+# --------------------------------------------------------------------
+set(KORDEX_DEPS_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/deps"
+    CACHE PATH
+    "Kordex local dependencies directory")
+
+set(KORDEX_VIX_DEPS_DIR
+    "${KORDEX_DEPS_DIR}/vix"
+    CACHE PATH
+    "Local Vix dependencies directory")
 
 # --------------------------------------------------------------------
-# Dependency helper
+# Helper
 # --------------------------------------------------------------------
-function(kordex_fetch_dependency dependency_name repository tag)
-  if(${dependency_name}_POPULATED)
-    return()
-  endif()
-
-  FetchContent_Declare(
-      ${dependency_name}
-      GIT_REPOSITORY ${repository}
-      GIT_TAG ${tag}
-      GIT_SHALLOW TRUE)
-
-  FetchContent_MakeAvailable(${dependency_name})
-endfunction()
-
-function(kordex_require_target target_name package_name dependency_name fetch_option repository tag)
+function(kordex_add_local_dependency dependency_name dependency_dir target_name)
   if(TARGET ${target_name})
+    message(STATUS "Kordex dependency '${dependency_name}' already available as ${target_name}")
     return()
   endif()
 
-  find_package(${package_name} CONFIG QUIET)
-
-  if(TARGET ${target_name})
-    return()
+  if(NOT EXISTS "${dependency_dir}/CMakeLists.txt")
+    message(FATAL_ERROR
+        "Kordex dependency '${dependency_name}' is missing at: ${dependency_dir}\n"
+        "Run:\n"
+        "  git submodule update --init --recursive")
   endif()
 
-  if(${fetch_option})
-    kordex_fetch_dependency(
-        ${dependency_name}
-        ${repository}
-        ${tag})
+  message(STATUS "Adding Kordex dependency: ${dependency_name}")
 
-    if(TARGET ${target_name})
-      return()
-    endif()
+  add_subdirectory(
+      "${dependency_dir}"
+      "${CMAKE_BINARY_DIR}/deps/${dependency_name}")
+
+  if(NOT TARGET ${target_name})
+    message(FATAL_ERROR
+        "Kordex dependency '${dependency_name}' did not define required target '${target_name}'")
   endif()
-
-  message(FATAL_ERROR
-      "Required dependency target '${target_name}' was not found. "
-      "Install package '${package_name}' or enable ${fetch_option}.")
 endfunction()
 
 # --------------------------------------------------------------------
 # Vix dependencies used by Kordex Runtime
 # --------------------------------------------------------------------
-kordex_require_target(
-    vix::async
+kordex_add_local_dependency(
+    vix_utils
+    "${KORDEX_VIX_DEPS_DIR}/utils"
+    vix::utils)
+
+kordex_add_local_dependency(
     vix_async
-    vix_async
-    KORDEX_RUNTIME_FETCH_ASYNC
-    https://github.com/vixcpp/async.git
-    ${KORDEX_VIX_GIT_TAG})
+    "${KORDEX_VIX_DEPS_DIR}/async"
+    vix::async)
 
-kordex_require_target(
-    vix::error
+kordex_add_local_dependency(
     vix_error
-    vix_error
-    KORDEX_RUNTIME_FETCH_ERROR
-    https://github.com/vixcpp/error.git
-    ${KORDEX_VIX_GIT_TAG})
+    "${KORDEX_VIX_DEPS_DIR}/error"
+    vix::error)
 
-kordex_require_target(
-    vix::fs
+kordex_add_local_dependency(
     vix_fs
-    vix_fs
-    KORDEX_RUNTIME_FETCH_FS
-    https://github.com/vixcpp/fs.git
-    ${KORDEX_VIX_GIT_TAG})
+    "${KORDEX_VIX_DEPS_DIR}/fs"
+    vix::fs)
 
-kordex_require_target(
-    vix::json
+kordex_add_local_dependency(
     vix_json
-    vix_json
-    KORDEX_RUNTIME_FETCH_JSON
-    https://github.com/vixcpp/json.git
-    ${KORDEX_VIX_GIT_TAG})
+    "${KORDEX_VIX_DEPS_DIR}/json"
+    vix::json)
 
-kordex_require_target(
-    vix::log
+kordex_add_local_dependency(
     vix_log
-    vix_log
-    KORDEX_RUNTIME_FETCH_LOG
-    https://github.com/vixcpp/log.git
-    ${KORDEX_VIX_GIT_TAG})
+    "${KORDEX_VIX_DEPS_DIR}/log"
+    vix::log)
 
-kordex_require_target(
-    vix::path
+kordex_add_local_dependency(
     vix_path
-    vix_path
-    KORDEX_RUNTIME_FETCH_PATH
-    https://github.com/vixcpp/path.git
-    ${KORDEX_VIX_GIT_TAG})
+    "${KORDEX_VIX_DEPS_DIR}/path"
+    vix::path)
 
-kordex_require_target(
-    vix::process
-    vix_process
-    vix_process
-    KORDEX_RUNTIME_FETCH_PROCESS
-    https://github.com/vixcpp/process.git
-    ${KORDEX_VIX_GIT_TAG})
+kordex_add_local_dependency(
+    vix_env
+    "${KORDEX_VIX_DEPS_DIR}/env"
+    vix::env)
 
-kordex_require_target(
-    vix::time
+kordex_add_local_dependency(
+    vix_process
+    "${KORDEX_VIX_DEPS_DIR}/process"
+    vix::process)
+
+kordex_add_local_dependency(
     vix_time
-    vix_time
-    KORDEX_RUNTIME_FETCH_TIME
-    https://github.com/vixcpp/time.git
-    ${KORDEX_VIX_GIT_TAG})
+    "${KORDEX_VIX_DEPS_DIR}/time"
+    vix::time)
 
 # --------------------------------------------------------------------
 # Extra Vix dependencies used by Kordex Std
 # --------------------------------------------------------------------
-kordex_require_target(
-    vix::env
-    vix_env
-    vix_env
-    KORDEX_STD_FETCH_ENV
-    https://github.com/vixcpp/env.git
-    ${KORDEX_VIX_GIT_TAG})
+if(KORDEX_ENABLE_STD_CRYPTO)
+  kordex_add_local_dependency(
+      vix_crypto
+      "${KORDEX_VIX_DEPS_DIR}/crypto"
+      vix::crypto)
+endif()
 
-kordex_require_target(
-    vix::crypto
-    vix_crypto
-    vix_crypto
-    KORDEX_STD_FETCH_CRYPTO
-    https://github.com/vixcpp/crypto.git
-    ${KORDEX_VIX_GIT_TAG})
-
-kordex_require_target(
-    vix::http
-    vix_http
-    vix_http
-    KORDEX_STD_FETCH_HTTP
-    https://github.com/vixcpp/http.git
-    ${KORDEX_VIX_GIT_TAG})
+if(KORDEX_ENABLE_STD_HTTP)
+  kordex_add_local_dependency(
+      vix_http
+      "${KORDEX_VIX_DEPS_DIR}/http"
+      vix::http)
+endif()
 
 # --------------------------------------------------------------------
 # Test dependency
 # --------------------------------------------------------------------
 if(KORDEX_BUILD_TESTS)
-  kordex_require_target(
-      vix::tests
+  kordex_add_local_dependency(
       vix_tests
-      vix_tests
-      KORDEX_FETCH_TESTS
-      https://github.com/vixcpp/tests.git
-      ${KORDEX_VIX_GIT_TAG})
+      "${KORDEX_VIX_DEPS_DIR}/tests"
+      vix::tests)
 endif()

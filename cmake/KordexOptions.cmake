@@ -293,8 +293,8 @@ set(KORDEX_CLI_GIT_TAG
 # --------------------------------------------------------------------
 # Dependency fetch policy
 # --------------------------------------------------------------------
-option(KORDEX_FETCH_VIX_DEPS "Fetch missing Vix dependencies" ON)
-option(KORDEX_FETCH_TESTS "Fetch missing test dependency" ON)
+option(KORDEX_FETCH_VIX_DEPS "Fetch missing Vix dependencies" OFF)
+option(KORDEX_FETCH_TESTS "Fetch missing test dependency" OFF)
 
 # Runtime dependencies
 set(KORDEX_RUNTIME_FETCH_ASYNC

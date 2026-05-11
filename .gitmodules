@@ -14,3 +14,42 @@
         path = modules/cli
         url = https://github.com/softadastra/kordex-cli.git
         branch = dev
+[submodule "deps/vix/utils"]
+	path = deps/vix/utils
+	url = https://github.com/vixcpp/utils.git
+[submodule "deps/vix/async"]
+	path = deps/vix/async
+	url = https://github.com/vixcpp/async.git
+[submodule "deps/vix/error"]
+	path = deps/vix/error
+	url = https://github.com/vixcpp/error.git
+[submodule "deps/vix/fs"]
+	path = deps/vix/fs
+	url = https://github.com/vixcpp/fs.git
+[submodule "deps/vix/json"]
+	path = deps/vix/json
+	url = https://github.com/vixcpp/json.git
+[submodule "deps/vix/log"]
+	path = deps/vix/log
+	url = https://github.com/vixcpp/log.git
+[submodule "deps/vix/path"]
+	path = deps/vix/path
+	url = https://github.com/vixcpp/path.git
+[submodule "deps/vix/env"]
+	path = deps/vix/env
+	url = https://github.com/vixcpp/env.git
+[submodule "deps/vix/process"]
+	path = deps/vix/process
+	url = https://github.com/vixcpp/process.git
+[submodule "deps/vix/time"]
+	path = deps/vix/time
+	url = https://github.com/vixcpp/time.git
+[submodule "deps/vix/crypto"]
+	path = deps/vix/crypto
+	url = https://github.com/vixcpp/crypto.git
+[submodule "deps/vix/http"]
+	path = deps/vix/http
+	url = https://github.com/vixcpp/http.git
+[submodule "deps/vix/tests"]
+	path = deps/vix/tests
+	url = https://github.com/vixcpp/tests.git
