@@ -7,6 +7,6 @@ find_dependency(kordex_bindings CONFIG REQUIRED)
 find_dependency(kordex_std CONFIG REQUIRED)
 find_dependency(kordex_cli CONFIG REQUIRED)
 
-include("${CMAKE_CURRENT_LIST_DIR}/kordexTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/KordexTargets.cmake")
 
 check_required_components(kordex)

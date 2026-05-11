@@ -37,6 +37,11 @@ option(KORDEX_BUILD_TESTS "Build all Kordex tests" OFF)
 option(KORDEX_BUILD_EXAMPLES "Build all Kordex examples" OFF)
 
 # --------------------------------------------------------------------
+# Install options
+# --------------------------------------------------------------------
+option(KORDEX_ENABLE_INSTALL "Generate install rules for Kordex umbrella" OFF)
+
+# --------------------------------------------------------------------
 # Developer options
 # --------------------------------------------------------------------
 option(KORDEX_ENABLE_WARNINGS "Enable compiler warnings for Kordex modules" ON)

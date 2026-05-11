@@ -49,33 +49,36 @@ include(KordexModules)
 # --------------------------------------------------------------------
 # Umbrella target
 # --------------------------------------------------------------------
-add_library(kordex INTERFACE)
-add_library(kordex::kordex ALIAS kordex)
+add_library(kordex_umbrella INTERFACE)
+add_library(kordex::kordex ALIAS kordex_umbrella)
 
-target_compile_features(kordex
+target_compile_features(kordex_umbrella
     INTERFACE
       cxx_std_20)
 
+set_target_properties(kordex_umbrella PROPERTIES
+    EXPORT_NAME kordex)
+
 if(TARGET kordex::runtime)
-  target_link_libraries(kordex
+  target_link_libraries(kordex_umbrella
       INTERFACE
         kordex::runtime)
 endif()
 
 if(TARGET kordex::bindings)
-  target_link_libraries(kordex
+  target_link_libraries(kordex_umbrella
       INTERFACE
         kordex::bindings)
 endif()
 
 if(TARGET kordex::std)
-  target_link_libraries(kordex
+  target_link_libraries(kordex_umbrella
       INTERFACE
         kordex::std)
 endif()
 
 if(TARGET kordex::cli)
-  target_link_libraries(kordex
+  target_link_libraries(kordex_umbrella
       INTERFACE
         kordex::cli)
 endif()
@@ -89,43 +92,45 @@ if(KORDEX_BUILD_TESTS)
 endif()
 
 # --------------------------------------------------------------------
-# Install umbrella target
-# --------------------------------------------------------------------
-install(
-    TARGETS kordex
-    EXPORT kordexTargets)
-
-install(
-    EXPORT kordexTargets
-    FILE kordexTargets.cmake
-    NAMESPACE kordex::
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/kordex")
-
-# --------------------------------------------------------------------
 # Install
 # --------------------------------------------------------------------
-include(KordexInstall)
+if(KORDEX_ENABLE_INSTALL)
+  install(
+      TARGETS kordex_umbrella
+      EXPORT KordexTargets)
+
+  install(
+      EXPORT KordexTargets
+      FILE KordexTargets.cmake
+      NAMESPACE kordex::
+      DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/kordex")
+
+  include(KordexInstall)
+endif()
 
 # --------------------------------------------------------------------
 # Build summary
 # --------------------------------------------------------------------
 message(STATUS "")
 message(STATUS "Kordex")
-message(STATUS "  version   : ${PROJECT_VERSION}")
-message(STATUS "  target    : kordex::kordex")
-message(STATUS "  compiler  : ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
-message(STATUS "  build     : ${CMAKE_BUILD_TYPE}")
+message(STATUS "  version        : ${PROJECT_VERSION}")
+message(STATUS "  target         : kordex::kordex")
+message(STATUS "  internal target: kordex_umbrella")
+message(STATUS "  executable     : kordex")
+message(STATUS "  compiler       : ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "  build          : ${CMAKE_BUILD_TYPE}")
 message(STATUS "")
 message(STATUS "Kordex build options")
-message(STATUS "  runtime   : ${KORDEX_BUILD_RUNTIME}")
-message(STATUS "  bindings  : ${KORDEX_BUILD_BINDINGS}")
-message(STATUS "  std       : ${KORDEX_BUILD_STD}")
-message(STATUS "  cli       : ${KORDEX_BUILD_CLI}")
-message(STATUS "  app       : ${KORDEX_BUILD_APP}")
-message(STATUS "  tests     : ${KORDEX_BUILD_TESTS}")
-message(STATUS "  examples  : ${KORDEX_BUILD_EXAMPLES}")
-message(STATUS "  warnings  : ${KORDEX_ENABLE_WARNINGS}")
-message(STATUS "  sanitizers: ${KORDEX_ENABLE_SANITIZERS}")
+message(STATUS "  runtime        : ${KORDEX_BUILD_RUNTIME}")
+message(STATUS "  bindings       : ${KORDEX_BUILD_BINDINGS}")
+message(STATUS "  std            : ${KORDEX_BUILD_STD}")
+message(STATUS "  cli            : ${KORDEX_BUILD_CLI}")
+message(STATUS "  app            : ${KORDEX_BUILD_APP}")
+message(STATUS "  tests          : ${KORDEX_BUILD_TESTS}")
+message(STATUS "  examples       : ${KORDEX_BUILD_EXAMPLES}")
+message(STATUS "  warnings       : ${KORDEX_ENABLE_WARNINGS}")
+message(STATUS "  sanitizers     : ${KORDEX_ENABLE_SANITIZERS}")
+message(STATUS "  install        : ${KORDEX_ENABLE_INSTALL}")
 message(STATUS "")
 message(STATUS "Kordex umbrella configuration complete")
 message(STATUS "")
