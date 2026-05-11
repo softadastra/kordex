@@ -1,0 +1,45 @@
+{
+  "name": "kordex",
+  "namespace": "softadastra",
+  "version": "0.1.0",
+  "type": "workspace",
+  "include": "include",
+  "license": "MIT",
+  "description": "A JavaScript runtime for reliable local-first applications, built on Kordex Runtime, Bindings, Std, and CLI.",
+  "keywords": [
+    "cpp",
+    "javascript-runtime",
+    "runtime",
+    "local-first",
+    "offline-first",
+    "developer-tools",
+    "kordex",
+    "softadastra",
+    "vix"
+  ],
+  "repository": "https://github.com/softadastra/kordex",
+  "authors": [
+    {
+      "name": "Softadastra",
+      "github": "softadastra"
+    }
+  ],
+  "deps": [
+    {
+      "id": "softadastra/kordex-runtime",
+      "version": "0.1.0"
+    },
+    {
+      "id": "softadastra/kordex-bindings",
+      "version": "0.1.0"
+    },
+    {
+      "id": "softadastra/kordex-std",
+      "version": "0.1.0"
+    },
+    {
+      "id": "softadastra/kordex-cli",
+      "version": "0.1.0"
+    }
+  ]
+}

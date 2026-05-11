@@ -1,0 +1,41 @@
+{
+  "dependencies": [
+    {
+      "commit": "a68bbcf931399964f78f1f41e63e82ac2a79d5bd",
+      "hash": "716fe4b605025f6a9a7612f3a5684cb731ef9d843fe6f08faa2e1b8dc21301b8",
+      "id": "softadastra/kordex-bindings",
+      "repo": "https://github.com/softadastra/kordex-bindings",
+      "requested": "0.1.0",
+      "tag": "v0.1.0",
+      "version": "0.1.0"
+    },
+    {
+      "commit": "4721eddb9956523c933ae134d6f5e1787e637ecc",
+      "hash": "4eadb5d32d1e81f06846e1199b5a53c1143b37906ec14f06e3feb230e18f43bc",
+      "id": "softadastra/kordex-cli",
+      "repo": "https://github.com/softadastra/kordex-cli",
+      "requested": "0.1.0",
+      "tag": "v0.1.0",
+      "version": "0.1.0"
+    },
+    {
+      "commit": "757686a639808882eb83ce14411ac52a372a83c7",
+      "hash": "29456ce30978ca7af36c576e1d1231e339ad05e5f5f38290cf01911e4c45fed0",
+      "id": "softadastra/kordex-runtime",
+      "repo": "https://github.com/softadastra/kordex-runtime",
+      "requested": "0.1.0",
+      "tag": "v0.1.0",
+      "version": "0.1.0"
+    },
+    {
+      "commit": "f9660e2b61f6a2841cd5682485bff158951685f0",
+      "hash": "60ce810500a2b9cde95052ee8e8e42ef62dce35a2ec055c17e4210b5a5bca616",
+      "id": "softadastra/kordex-std",
+      "repo": "https://github.com/softadastra/kordex-std",
+      "requested": "0.1.0",
+      "tag": "v0.1.0",
+      "version": "0.1.0"
+    }
+  ],
+  "lockVersion": 1
+}
