@@ -23,6 +23,7 @@ project(kordex
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # --------------------------------------------------------------------
 # Project paths
@@ -44,18 +45,6 @@ include(KordexDependencies)
 # Modules
 # --------------------------------------------------------------------
 include(KordexModules)
-
-# --------------------------------------------------------------------
-# Tests
-# --------------------------------------------------------------------
-if(KORDEX_BUILD_TESTS)
-  enable_testing()
-endif()
-
-# --------------------------------------------------------------------
-# Install
-# --------------------------------------------------------------------
-include(KordexInstall)
 
 # --------------------------------------------------------------------
 # Umbrella target
@@ -92,6 +81,14 @@ if(TARGET kordex::cli)
 endif()
 
 # --------------------------------------------------------------------
+# Tests
+# --------------------------------------------------------------------
+if(KORDEX_BUILD_TESTS)
+  include(CTest)
+  enable_testing()
+endif()
+
+# --------------------------------------------------------------------
 # Install umbrella target
 # --------------------------------------------------------------------
 install(
@@ -105,26 +102,30 @@ install(
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/kordex")
 
 # --------------------------------------------------------------------
+# Install
+# --------------------------------------------------------------------
+include(KordexInstall)
+
+# --------------------------------------------------------------------
 # Build summary
 # --------------------------------------------------------------------
 message(STATUS "")
 message(STATUS "Kordex")
-message(STATUS "  version  : ${PROJECT_VERSION}")
-message(STATUS "  compiler : ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
-message(STATUS "  build    : ${CMAKE_BUILD_TYPE}")
+message(STATUS "  version   : ${PROJECT_VERSION}")
+message(STATUS "  target    : kordex::kordex")
+message(STATUS "  compiler  : ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "  build     : ${CMAKE_BUILD_TYPE}")
 message(STATUS "")
 message(STATUS "Kordex build options")
-message(STATUS "  app      : ${KORDEX_BUILD_APP}")
-message(STATUS "  tests    : ${KORDEX_BUILD_TESTS}")
-message(STATUS "  examples : ${KORDEX_BUILD_EXAMPLES}")
-message(STATUS "  warnings : ${KORDEX_ENABLE_WARNINGS}")
+message(STATUS "  runtime   : ${KORDEX_BUILD_RUNTIME}")
+message(STATUS "  bindings  : ${KORDEX_BUILD_BINDINGS}")
+message(STATUS "  std       : ${KORDEX_BUILD_STD}")
+message(STATUS "  cli       : ${KORDEX_BUILD_CLI}")
+message(STATUS "  app       : ${KORDEX_BUILD_APP}")
+message(STATUS "  tests     : ${KORDEX_BUILD_TESTS}")
+message(STATUS "  examples  : ${KORDEX_BUILD_EXAMPLES}")
+message(STATUS "  warnings  : ${KORDEX_ENABLE_WARNINGS}")
 message(STATUS "  sanitizers: ${KORDEX_ENABLE_SANITIZERS}")
 message(STATUS "")
-
-if(TARGET kordex)
-  message(STATUS "Kordex umbrella target: kordex::kordex")
-endif()
-
-if(TARGET kordex)
-  message(STATUS "Kordex umbrella configuration complete")
-endif()
+message(STATUS "Kordex umbrella configuration complete")
+message(STATUS "")

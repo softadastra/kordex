@@ -1,14 +1,16 @@
 #  @file KordexDependencies.cmake
-#  @author Gaspard Kirira
+#  @author Softadastra
 #
-#  Copyright 2026, Gaspard Kirira. All rights reserved.
-#  https://github.com/kordexjs/kordex
+#  Copyright 2026, Softadastra. All rights reserved.
+#  https://github.com/softadastra/kordex
 #  Use of this source code is governed by a MIT license
 #  that can be found in the LICENSE file.
 #
 # ====================================================================
 # Kordex - Umbrella Dependencies
 # ====================================================================
+
+include_guard(GLOBAL)
 
 set(KORDEX_DEPENDENCIES_INCLUDED ON)
 
@@ -45,7 +47,7 @@ function(kordex_add_local_dependency dependency_name dependency_dir target_name)
 
   add_subdirectory(
       "${dependency_dir}"
-      "${CMAKE_BINARY_DIR}/deps/${dependency_name}")
+      "${CMAKE_CURRENT_BINARY_DIR}/deps/${dependency_name}")
 
   if(NOT TARGET ${target_name})
     message(FATAL_ERROR
@@ -54,7 +56,7 @@ function(kordex_add_local_dependency dependency_name dependency_dir target_name)
 endfunction()
 
 # --------------------------------------------------------------------
-# Vix dependencies used by Kordex Runtime
+# Core Vix dependencies
 # --------------------------------------------------------------------
 kordex_add_local_dependency(
     vix_utils
@@ -72,9 +74,9 @@ kordex_add_local_dependency(
     vix::error)
 
 kordex_add_local_dependency(
-    vix_fs
-    "${KORDEX_VIX_DEPS_DIR}/fs"
-    vix::fs)
+    vix_log
+    "${KORDEX_VIX_DEPS_DIR}/log"
+    vix::log)
 
 kordex_add_local_dependency(
     vix_json
@@ -82,9 +84,9 @@ kordex_add_local_dependency(
     vix::json)
 
 kordex_add_local_dependency(
-    vix_log
-    "${KORDEX_VIX_DEPS_DIR}/log"
-    vix::log)
+    vix_fs
+    "${KORDEX_VIX_DEPS_DIR}/fs"
+    vix::fs)
 
 kordex_add_local_dependency(
     vix_path
@@ -107,7 +109,7 @@ kordex_add_local_dependency(
     vix::time)
 
 # --------------------------------------------------------------------
-# Extra Vix dependencies used by Kordex Std
+# Optional Vix dependencies used by Kordex Std
 # --------------------------------------------------------------------
 if(KORDEX_ENABLE_STD_CRYPTO)
   kordex_add_local_dependency(
@@ -118,9 +120,9 @@ endif()
 
 if(KORDEX_ENABLE_STD_HTTP)
   kordex_add_local_dependency(
-      vix_http
-      "${KORDEX_VIX_DEPS_DIR}/http"
-      vix::http)
+      vix_core
+      "${KORDEX_VIX_DEPS_DIR}/core"
+      vix::core)
 endif()
 
 # --------------------------------------------------------------------

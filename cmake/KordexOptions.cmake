@@ -449,10 +449,10 @@ set(KORDEX_STD_FETCH_CRYPTO
     "Auto-fetch vix::crypto if missing"
     FORCE)
 
-set(KORDEX_STD_FETCH_HTTP
+set(KORDEX_STD_FETCH_CORE
     ${KORDEX_FETCH_VIX_DEPS}
     CACHE BOOL
-    "Auto-fetch vix::http if missing"
+    "Auto-fetch vix::core if missing"
     FORCE)
 
 set(KORDEX_STD_FETCH_TESTS

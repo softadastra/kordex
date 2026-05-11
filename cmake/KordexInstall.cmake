@@ -1,14 +1,16 @@
 #  @file KordexInstall.cmake
-#  @author Gaspard Kirira
+#  @author Softadastra
 #
-#  Copyright 2026, Gaspard Kirira. All rights reserved.
-#  https://github.com/kordexjs/kordex
+#  Copyright 2026, Softadastra. All rights reserved.
+#  https://github.com/softadastra/kordex
 #  Use of this source code is governed by a MIT license
 #  that can be found in the LICENSE file.
 #
 # ====================================================================
 # Kordex - Umbrella Install
 # ====================================================================
+
+include_guard(GLOBAL)
 
 set(KORDEX_INSTALL_INCLUDED ON)
 
@@ -27,19 +29,7 @@ install(
       "${CMAKE_INSTALL_DATADIR}/kordex")
 
 # --------------------------------------------------------------------
-# Install umbrella cmake helpers
-# --------------------------------------------------------------------
-install(
-    DIRECTORY
-      "${CMAKE_CURRENT_SOURCE_DIR}/cmake/"
-    DESTINATION
-      "${CMAKE_INSTALL_LIBDIR}/cmake/kordex"
-    FILES_MATCHING
-      PATTERN "*.cmake"
-      PATTERN "*.cmake.in" EXCLUDE)
-
-# --------------------------------------------------------------------
-# Optional umbrella package config
+# Package config
 # --------------------------------------------------------------------
 set(KORDEX_PACKAGE_CONFIG_IN
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/KordexConfig.cmake.in")
@@ -71,82 +61,6 @@ if(EXISTS "${KORDEX_PACKAGE_CONFIG_IN}")
       DESTINATION
         "${CMAKE_INSTALL_LIBDIR}/cmake/kordex")
 endif()
-
-# --------------------------------------------------------------------
-# Install convenience aliases file
-# --------------------------------------------------------------------
-set(KORDEX_ALIASES_FILE
-    "${CMAKE_CURRENT_BINARY_DIR}/KordexTargets.cmake")
-
-file(WRITE
-    "${KORDEX_ALIASES_FILE}"
-    "# Kordex umbrella target aliases\n")
-
-if(TARGET kordex::runtime)
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "if(NOT TARGET Kordex::Runtime AND TARGET kordex::runtime)\n")
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "  add_library(Kordex::Runtime INTERFACE IMPORTED)\n")
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "  target_link_libraries(Kordex::Runtime INTERFACE kordex::runtime)\n")
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "endif()\n\n")
-endif()
-
-if(TARGET kordex::bindings)
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "if(NOT TARGET Kordex::Bindings AND TARGET kordex::bindings)\n")
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "  add_library(Kordex::Bindings INTERFACE IMPORTED)\n")
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "  target_link_libraries(Kordex::Bindings INTERFACE kordex::bindings)\n")
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "endif()\n\n")
-endif()
-
-if(TARGET kordex::std)
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "if(NOT TARGET Kordex::Std AND TARGET kordex::std)\n")
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "  add_library(Kordex::Std INTERFACE IMPORTED)\n")
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "  target_link_libraries(Kordex::Std INTERFACE kordex::std)\n")
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "endif()\n\n")
-endif()
-
-if(TARGET kordex::cli)
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "if(NOT TARGET Kordex::Cli AND TARGET kordex::cli)\n")
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "  add_library(Kordex::Cli INTERFACE IMPORTED)\n")
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "  target_link_libraries(Kordex::Cli INTERFACE kordex::cli)\n")
-  file(APPEND
-      "${KORDEX_ALIASES_FILE}"
-      "endif()\n\n")
-endif()
-
-install(
-    FILES
-      "${KORDEX_ALIASES_FILE}"
-    DESTINATION
-      "${CMAKE_INSTALL_LIBDIR}/cmake/kordex")
 
 # --------------------------------------------------------------------
 # Install summary

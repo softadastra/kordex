@@ -53,3 +53,6 @@
 [submodule "deps/vix/tests"]
 	path = deps/vix/tests
 	url = https://github.com/vixcpp/tests.git
+[submodule "deps/vix/core"]
+	path = deps/vix/core
+	url = https://github.com/vixcpp/core.git

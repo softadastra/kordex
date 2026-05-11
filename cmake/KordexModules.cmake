@@ -1,14 +1,16 @@
 #  @file KordexModules.cmake
-#  @author Gaspard Kirira
+#  @author Softadastra
 #
-#  Copyright 2026, Gaspard Kirira. All rights reserved.
-#  https://github.com/kordexjs/kordex
+#  Copyright 2026, Softadastra. All rights reserved.
+#  https://github.com/softadastra/kordex
 #  Use of this source code is governed by a MIT license
 #  that can be found in the LICENSE file.
 #
 # ====================================================================
 # Kordex - Umbrella Modules
 # ====================================================================
+
+include_guard(GLOBAL)
 
 set(KORDEX_MODULES_INCLUDED ON)
 
@@ -31,21 +33,21 @@ set(KORDEX_CLI_DIR
 # Helper
 # --------------------------------------------------------------------
 function(kordex_add_module module_name module_dir target_name)
-  if(NOT EXISTS "${module_dir}/CMakeLists.txt")
-    message(FATAL_ERROR
-        "Kordex module '${module_name}' is missing CMakeLists.txt at: ${module_dir}")
-  endif()
-
   if(TARGET ${target_name})
     message(STATUS "Kordex module '${module_name}' already available as ${target_name}")
     return()
+  endif()
+
+  if(NOT EXISTS "${module_dir}/CMakeLists.txt")
+    message(FATAL_ERROR
+        "Kordex module '${module_name}' is missing CMakeLists.txt at: ${module_dir}")
   endif()
 
   message(STATUS "Adding Kordex module: ${module_name}")
 
   add_subdirectory(
       "${module_dir}"
-      "${CMAKE_BINARY_DIR}/modules/${module_name}")
+      "${CMAKE_CURRENT_BINARY_DIR}/modules/${module_name}")
 
   if(NOT TARGET ${target_name})
     message(FATAL_ERROR
