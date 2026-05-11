@@ -1,12 +1,16 @@
 [submodule "modules/runtime"]
-	path = modules/runtime
-	url = https://github.com/kordexjs/runtime.git
+        path = modules/runtime
+        url = https://github.com/softadastra/kordex-runtime.git
+        branch = dev
 [submodule "modules/bindings"]
-	path = modules/bindings
-	url = https://github.com/kordexjs/bindings.git
+        path = modules/bindings
+        url = https://github.com/softadastra/kordex-bindings.git
+        branch = dev
 [submodule "modules/std"]
-	path = modules/std
-	url = https://github.com/kordexjs/std.git
+        path = modules/std
+        url = https://github.com/softadastra/kordex-std.git
+        branch = dev
 [submodule "modules/cli"]
-	path = modules/cli
-	url = https://github.com/kordexjs/cli.git
+        path = modules/cli
+        url = https://github.com/softadastra/kordex-cli.git
+        branch = dev
