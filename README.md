@@ -173,6 +173,30 @@ The CLI connects runtime, bindings, std modules, project discovery, permissions,
 - `kordex.lock` generation
 - Integration tests for the final CLI workflow
 
+## Installation
+
+Kordex is built with the Vix.cpp CLI.
+
+Install Vix using the official installer:
+
+### Shell Linux/macOS
+
+```bash
+curl -fsSL https://vixcpp.com/install.sh | bash
+```
+
+### PowerShell Windows
+
+```powershell
+irm https://vixcpp.com/install.ps1 | iex
+```
+
+Verify the installation:
+
+```bash
+vix --version
+```
+
 ## Quick start
 
 Build the full project with QuickJS enabled:
@@ -182,19 +206,21 @@ vix build --preset dev-ninja --build-target all -v -- \
   -DKORDEX_ENABLE_QUICKJS=ON \
   -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
   -DKORDEX_BUILD_APP=ON
+```
 
 With tests enabled:
 
 ```bash
-vix build \
-  --preset dev-ninja \
-  -- \
+vix build --preset dev-ninja --build-target all -v -- \
+  -DKORDEX_ENABLE_QUICKJS=ON \
+  -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
+  -DKORDEX_BUILD_APP=ON \
   -DKORDEX_BUILD_TESTS=ON
 
 vix tests -- --output-on-failure
 ```
 
-Install the CLI locally:
+Install the Kordex CLI locally:
 
 ```bash
 vix build --preset dev-ninja --build-target all -v -- \
@@ -206,7 +232,7 @@ vix build --preset dev-ninja --build-target all -v -- \
 sudo cmake --install build-ninja --prefix /usr/local
 ```
 
-If using the CLI binary:
+Verify Kordex:
 
 ```bash
 kordex version

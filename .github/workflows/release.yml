@@ -128,6 +128,7 @@ jobs:
             -DCMAKE_INSTALL_PREFIX="${GITHUB_WORKSPACE}/${{ matrix.install_dir }}" \
             -DKORDEX_ENABLE_QUICKJS=ON \
             -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
+            -DKORDEX_ENABLE_STD_HTTP=OFF \
             -DKORDEX_BUILD_APP=ON \
             -DKORDEX_BUILD_TESTS=OFF \
             -DKORDEX_BUILD_EXAMPLES=OFF \
@@ -144,6 +145,7 @@ jobs:
             -DVCPKG_TARGET_TRIPLET=x64-windows `
             -DKORDEX_ENABLE_QUICKJS=ON `
             -DKORDEX_ENABLE_NATIVE_ENGINE=OFF `
+            -DKORDEX_ENABLE_STD_HTTP=OFF `
             -DKORDEX_BUILD_APP=ON `
             -DKORDEX_BUILD_TESTS=OFF `
             -DKORDEX_BUILD_EXAMPLES=OFF `
