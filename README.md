@@ -1,9 +1,45 @@
-# Kordex
+<table>
+  <tr>
+    <td valign="top" width="65%">
 
-A JavaScript runtime for reliable local-first applications.
+<h1>Kordex</h1>
 
-Kordex is built on top of Vix and Softadastra.
-It provides a JavaScript/TypeScript runtime layer designed for applications that must keep working under real-world network conditions, offline usage, local-first workflows, and controlled permissions.
+<p>
+  <a href="https://github.com/softadastra/kordex">
+    <img src="https://img.shields.io/badge/GitHub-Repository-black?logo=github" />
+  </a>
+  <a href="https://github.com/softadastra/kordex/releases">
+    <img src="https://img.shields.io/badge/Releases-Download-blue?logo=github" />
+  </a>
+</p>
+
+<h3>A JavaScript runtime for reliable local-first applications.</h3>
+
+<p>
+  Kordex is built on top of Vix.cpp and Softadastra.
+  It provides a JavaScript and TypeScript runtime layer designed for local-first,
+  offline-ready, and permission-controlled applications.
+</p>
+
+<p>
+  <a href="https://github.com/softadastra/kordex"><b>Repo</b></a> ·
+  <a href="https://github.com/vixcpp/vix"><b>Vix.cpp</b></a> ·
+  <a href="https://softadastra.com"><b>Softadastra</b></a>
+</p>
+
+</td>
+
+<td valign="middle" width="25%" align="right">
+
+<img
+  src="https://res.cloudinary.com/dwjbed2xb/image/upload/v1778700533/kordex_kzrxcx.png"
+  width="260"
+  style="border-radius:50%; object-fit:cover;"
+/>
+
+</td>
+  </tr>
+</table>
 
 ## Vision
 
@@ -158,7 +194,6 @@ vix build \
 vix tests -- --output-on-failure
 ```
 
-````md
 Install the CLI locally:
 
 ```bash
