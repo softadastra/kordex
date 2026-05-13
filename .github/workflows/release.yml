@@ -69,6 +69,27 @@ jobs:
       - name: Setup CMake
         uses: lukka/get-cmake@latest
 
+      - name: Setup MSYS2 on Windows
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            git
+            base-devel
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-spdlog
+            mingw-w64-x86_64-fmt
+            mingw-w64-x86_64-nlohmann-json
+            mingw-w64-x86_64-openssl
+            zip
+            unzip
+            tar
+
       - name: Install dependencies on Linux
         if: runner.os == 'Linux'
         shell: bash
@@ -108,18 +129,6 @@ jobs:
             openssl \
             zlib
 
-      - name: Setup MSVC on Windows
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-
-      - name: Install dependencies on Windows
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          vcpkg install spdlog:x64-windows fmt:x64-windows nlohmann-json:x64-windows
-
       - name: Configure on Linux and macOS
         if: runner.os != 'Windows'
         shell: bash
@@ -140,23 +149,33 @@ jobs:
 
       - name: Configure on Windows
         if: runner.os == 'Windows'
-        shell: pwsh
+        shell: msys2 {0}
         run: |
-          cmake -S . -B "${{ matrix.build_dir }}" -G Ninja `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DCMAKE_C_COMPILER=cl `
-            -DCMAKE_CXX_COMPILER=cl `
-            -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/${{ matrix.install_dir }}" `
-            -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-            -DVCPKG_TARGET_TRIPLET=x64-windows `
-            -DKORDEX_ENABLE_QUICKJS=ON `
-            -DKORDEX_ENABLE_NATIVE_ENGINE=OFF `
-            -DKORDEX_ENABLE_STD_HTTP=OFF `
-            -DKORDEX_ENABLE_STD_CRYPTO=OFF `
-            -DKORDEX_BUILD_APP=ON `
-            -DKORDEX_BUILD_TESTS=OFF `
-            -DKORDEX_BUILD_EXAMPLES=OFF `
+          set -euxo pipefail
+
+          cmake -S . -B "${{ matrix.build_dir }}" -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=gcc \
+            -DCMAKE_CXX_COMPILER=g++ \
+            -DCMAKE_INSTALL_PREFIX="${GITHUB_WORKSPACE}/${{ matrix.install_dir }}" \
+            -DKORDEX_ENABLE_QUICKJS=ON \
+            -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
+            -DKORDEX_ENABLE_STD_HTTP=OFF \
+            -DKORDEX_ENABLE_STD_CRYPTO=OFF \
+            -DKORDEX_BUILD_APP=ON \
+            -DKORDEX_BUILD_TESTS=OFF \
+            -DKORDEX_BUILD_EXAMPLES=OFF \
             -DKORDEX_ENABLE_INSTALL=ON
+
+          python - <<'PY'
+          from pathlib import Path
+
+          ninja = Path("${{ matrix.build_dir }}") / "build.ninja"
+          text = ninja.read_text(encoding="utf-8")
+          text = text.replace(" /Zc:__cplusplus", "")
+          text = text.replace("/Zc:__cplusplus", "")
+          ninja.write_text(text, encoding="utf-8")
+          PY
 
       - name: Build on Linux and macOS
         if: runner.os != 'Windows'
@@ -167,8 +186,9 @@ jobs:
 
       - name: Build on Windows
         if: runner.os == 'Windows'
-        shell: pwsh
+        shell: msys2 {0}
         run: |
+          set -euxo pipefail
           cmake --build "${{ matrix.build_dir }}" --target all --parallel 2
 
       - name: Install on Linux and macOS
@@ -180,8 +200,9 @@ jobs:
 
       - name: Install on Windows
         if: runner.os == 'Windows'
-        shell: pwsh
+        shell: msys2 {0}
         run: |
+          set -euxo pipefail
           cmake --install "${{ matrix.build_dir }}"
 
       - name: Check binary on Linux and macOS
@@ -193,9 +214,10 @@ jobs:
 
       - name: Check binary on Windows
         if: runner.os == 'Windows'
-        shell: pwsh
+        shell: msys2 {0}
         run: |
-          & "${{ matrix.install_dir }}/bin/${{ matrix.exe }}" --version
+          set -euxo pipefail
+          "${{ matrix.install_dir }}/bin/${{ matrix.exe }}" --version
 
       - name: Create TypeScript smoke project
         shell: bash
@@ -240,11 +262,13 @@ jobs:
 
       - name: Run TypeScript smoke test on Windows
         if: runner.os == 'Windows'
-        shell: pwsh
+        shell: msys2 {0}
         run: |
-          Set-Location smoke-app
-          & "../${{ matrix.install_dir }}/bin/${{ matrix.exe }}" run | Tee-Object -FilePath output.txt
-          Select-String -Path output.txt -Pattern "Hello CI from Kordex"
+          set -euxo pipefail
+
+          cd smoke-app
+          "../${{ matrix.install_dir }}/bin/${{ matrix.exe }}" run | tee output.txt
+          grep "Hello CI from Kordex" output.txt
 
       - name: Package on Linux and macOS
         if: runner.os != 'Windows'
@@ -265,20 +289,21 @@ jobs:
 
       - name: Package on Windows
         if: runner.os == 'Windows'
-        shell: pwsh
+        shell: msys2 {0}
         run: |
-          Remove-Item -Recurse -Force dist, package-root -ErrorAction SilentlyContinue
+          set -euxo pipefail
 
-          New-Item -ItemType Directory -Force dist | Out-Null
-          New-Item -ItemType Directory -Force package-root/bin | Out-Null
+          rm -rf dist package-root
+          mkdir -p dist package-root/bin
 
-          Copy-Item "${{ matrix.install_dir }}/bin/${{ matrix.exe }}" package-root/bin/
-          Copy-Item README.md package-root/
-          Copy-Item LICENSE package-root/
+          cp "${{ matrix.install_dir }}/bin/${{ matrix.exe }}" package-root/bin/
+          cp README.md package-root/
+          cp LICENSE package-root/
 
-          Compress-Archive -Path package-root/* -DestinationPath "dist/${{ matrix.asset }}" -Force
+          powershell.exe -NoProfile -Command \
+            "Compress-Archive -Path package-root/* -DestinationPath 'dist/${{ matrix.asset }}' -Force"
 
-          Get-ChildItem dist
+          ls -lah dist
 
       - name: Generate checksum on Linux
         if: runner.os == 'Linux'
@@ -302,11 +327,13 @@ jobs:
 
       - name: Generate checksum on Windows
         if: runner.os == 'Windows'
-        shell: pwsh
+        shell: msys2 {0}
         run: |
-          $hash = Get-FileHash "dist/${{ matrix.asset }}" -Algorithm SHA256
-          "$($hash.Hash.ToLower())  ${{ matrix.asset }}" | Out-File -Encoding ascii "dist/${{ matrix.asset }}.sha256"
-          Get-Content "dist/${{ matrix.asset }}.sha256"
+          set -euxo pipefail
+
+          cd dist
+          sha256sum "${{ matrix.asset }}" > "${{ matrix.asset }}.sha256"
+          cat "${{ matrix.asset }}.sha256"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
