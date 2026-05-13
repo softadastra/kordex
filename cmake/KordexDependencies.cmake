@@ -133,6 +133,80 @@ function(kordex_add_quickjs)
       PUBLIC
         "${KORDEX_QUICKJS_INCLUDE_DIR}")
 
+  # ------------------------------------------------------------------
+  # QuickJS Windows compatibility headers for MSVC
+  # ------------------------------------------------------------------
+  if(WIN32 AND MSVC)
+    set(KORDEX_QUICKJS_COMPAT_DIR
+        "${CMAKE_CURRENT_BINARY_DIR}/quickjs-msvc-compat")
+
+    file(MAKE_DIRECTORY
+        "${KORDEX_QUICKJS_COMPAT_DIR}/sys")
+
+    file(WRITE
+        "${KORDEX_QUICKJS_COMPAT_DIR}/sys/time.h"
+        [=[
+  #ifndef KORDEX_QUICKJS_Msvc_SYS_TIME_H
+  #define KORDEX_QUICKJS_Msvc_SYS_TIME_H
+
+  #ifdef _WIN32
+
+  #ifndef NOMINMAX
+  #define NOMINMAX
+  #endif
+
+  #include <windows.h>
+  #include <time.h>
+
+  #ifndef _TIMEVAL_DEFINED
+  #define _TIMEVAL_DEFINED
+  struct timeval
+  {
+    long tv_sec;
+    long tv_usec;
+  };
+  #endif
+
+  static inline int gettimeofday(struct timeval *tv, void *tz)
+  {
+    (void)tz;
+
+    if (tv == 0)
+    {
+      return -1;
+    }
+
+    FILETIME file_time;
+    ULARGE_INTEGER value;
+
+    GetSystemTimeAsFileTime(&file_time);
+
+    value.LowPart = file_time.dwLowDateTime;
+    value.HighPart = file_time.dwHighDateTime;
+
+    /*
+    * FILETIME is the number of 100-nanosecond intervals since
+    * 1601-01-01. Unix time starts at 1970-01-01.
+    */
+    unsigned long long ticks = value.QuadPart;
+    ticks -= 116444736000000000ULL;
+
+    tv->tv_sec = (long)(ticks / 10000000ULL);
+    tv->tv_usec = (long)((ticks % 10000000ULL) / 10ULL);
+
+    return 0;
+  }
+
+  #endif
+
+  #endif
+  ]=])
+
+    target_include_directories(kordex_quickjs
+        PRIVATE
+          "${KORDEX_QUICKJS_COMPAT_DIR}")
+  endif()
+
   target_compile_definitions(kordex_quickjs
       PRIVATE
         CONFIG_VERSION="kordex"
