@@ -112,9 +112,26 @@ function(kordex_add_quickjs)
 
   add_library(quickjs ALIAS kordex_quickjs)
 
+    set(KORDEX_QUICKJS_INCLUDE_DIR
+      "${CMAKE_CURRENT_BINARY_DIR}/quickjs-include")
+
+  file(MAKE_DIRECTORY "${KORDEX_QUICKJS_INCLUDE_DIR}")
+
+  file(COPY
+      "${KORDEX_QUICKJS_SOURCE_DIR}/quickjs.h"
+      DESTINATION
+        "${KORDEX_QUICKJS_INCLUDE_DIR}")
+
+  if(EXISTS "${KORDEX_QUICKJS_SOURCE_DIR}/quickjs-libc.h")
+    file(COPY
+        "${KORDEX_QUICKJS_SOURCE_DIR}/quickjs-libc.h"
+        DESTINATION
+          "${KORDEX_QUICKJS_INCLUDE_DIR}")
+  endif()
+
   target_include_directories(kordex_quickjs
       PUBLIC
-        "${KORDEX_QUICKJS_SOURCE_DIR}")
+        "${KORDEX_QUICKJS_INCLUDE_DIR}")
 
   target_compile_definitions(kordex_quickjs
       PRIVATE
