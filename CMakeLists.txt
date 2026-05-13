@@ -15,7 +15,7 @@ cmake_minimum_required(VERSION 3.24)
 project(kordex
     VERSION 0.1.0
     DESCRIPTION "A JavaScript runtime for reliable local-first applications"
-    LANGUAGES CXX)
+    LANGUAGES C CXX)
 
 # --------------------------------------------------------------------
 # Global C++ settings
@@ -134,16 +134,6 @@ endif()
 # Install
 # --------------------------------------------------------------------
 if(KORDEX_ENABLE_INSTALL)
-  install(
-      TARGETS kordex_umbrella
-      EXPORT KordexTargets)
-
-  install(
-      EXPORT KordexTargets
-      FILE KordexTargets.cmake
-      NAMESPACE kordex::
-      DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/kordex")
-
   include(KordexInstall)
 endif()
 

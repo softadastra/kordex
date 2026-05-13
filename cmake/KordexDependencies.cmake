@@ -56,6 +56,95 @@ function(kordex_add_local_dependency dependency_name dependency_dir target_name)
 endfunction()
 
 # --------------------------------------------------------------------
+# QuickJS dependency
+# --------------------------------------------------------------------
+function(kordex_add_quickjs)
+  if(TARGET quickjs OR TARGET kordex_quickjs)
+    message(STATUS "Kordex dependency 'quickjs' already available")
+    return()
+  endif()
+
+  if(NOT KORDEX_ENABLE_QUICKJS)
+    return()
+  endif()
+
+  include(FetchContent)
+
+  message(STATUS "Adding Kordex dependency: quickjs")
+
+  FetchContent_Declare(
+      quickjs
+      GIT_REPOSITORY https://github.com/bellard/quickjs.git
+      GIT_TAG master
+      GIT_SHALLOW TRUE)
+
+  FetchContent_GetProperties(quickjs)
+
+  if(NOT quickjs_POPULATED)
+    FetchContent_Populate(quickjs)
+  endif()
+
+  set(KORDEX_QUICKJS_SOURCE_DIR "${quickjs_SOURCE_DIR}")
+
+  if(NOT EXISTS "${KORDEX_QUICKJS_SOURCE_DIR}/quickjs.c")
+    message(FATAL_ERROR
+        "QuickJS source file was not found: ${KORDEX_QUICKJS_SOURCE_DIR}/quickjs.c")
+  endif()
+
+  set(KORDEX_QUICKJS_SOURCES
+      "${KORDEX_QUICKJS_SOURCE_DIR}/quickjs.c"
+      "${KORDEX_QUICKJS_SOURCE_DIR}/libregexp.c"
+      "${KORDEX_QUICKJS_SOURCE_DIR}/libunicode.c"
+      "${KORDEX_QUICKJS_SOURCE_DIR}/cutils.c")
+
+  if(EXISTS "${KORDEX_QUICKJS_SOURCE_DIR}/libbf.c")
+    list(APPEND KORDEX_QUICKJS_SOURCES
+        "${KORDEX_QUICKJS_SOURCE_DIR}/libbf.c")
+  endif()
+
+  if(EXISTS "${KORDEX_QUICKJS_SOURCE_DIR}/dtoa.c")
+    list(APPEND KORDEX_QUICKJS_SOURCES
+        "${KORDEX_QUICKJS_SOURCE_DIR}/dtoa.c")
+  endif()
+
+  add_library(kordex_quickjs STATIC
+      ${KORDEX_QUICKJS_SOURCES})
+
+  add_library(quickjs ALIAS kordex_quickjs)
+
+  target_include_directories(kordex_quickjs
+      PUBLIC
+        "${KORDEX_QUICKJS_SOURCE_DIR}")
+
+  target_compile_definitions(kordex_quickjs
+      PRIVATE
+        CONFIG_VERSION="kordex"
+        _GNU_SOURCE)
+
+  target_compile_options(kordex_quickjs
+      PRIVATE
+        $<$<C_COMPILER_ID:GNU,Clang,AppleClang>:-Wno-unused-parameter>
+        $<$<C_COMPILER_ID:GNU,Clang,AppleClang>:-Wno-missing-field-initializers>
+        $<$<C_COMPILER_ID:GNU,Clang,AppleClang>:-Wno-sign-compare>
+        $<$<C_COMPILER_ID:GNU,Clang,AppleClang>:-Wno-unused-function>
+        $<$<C_COMPILER_ID:GNU,Clang,AppleClang>:-Wno-implicit-fallthrough>)
+
+  if(UNIX AND NOT APPLE)
+    target_link_libraries(kordex_quickjs
+        PUBLIC
+          m
+          dl
+          pthread)
+  elseif(UNIX)
+    target_link_libraries(kordex_quickjs
+        PUBLIC
+          m)
+  endif()
+endfunction()
+
+kordex_add_quickjs()
+
+# --------------------------------------------------------------------
 # Core Vix dependencies
 # --------------------------------------------------------------------
 kordex_add_local_dependency(

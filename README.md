@@ -139,11 +139,13 @@ The CLI connects runtime, bindings, std modules, project discovery, permissions,
 
 ## Quick start
 
-Build the full project:
+Build the full project with QuickJS enabled:
 
 ```bash
-vix build --preset dev-ninja
-```
+vix build --preset dev-ninja --build-target all -v -- \
+  -DKORDEX_ENABLE_QUICKJS=ON \
+  -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
+  -DKORDEX_BUILD_APP=ON
 
 With tests enabled:
 
@@ -154,6 +156,19 @@ vix build \
   -DKORDEX_BUILD_TESTS=ON
 
 vix tests -- --output-on-failure
+```
+
+````md
+Install the CLI locally:
+
+```bash
+vix build --preset dev-ninja --build-target all -v -- \
+  -DKORDEX_ENABLE_QUICKJS=ON \
+  -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
+  -DKORDEX_BUILD_APP=ON \
+  -DKORDEX_ENABLE_INSTALL=ON
+
+sudo cmake --install build-ninja --prefix /usr/local
 ```
 
 If using the CLI binary:
@@ -565,14 +580,13 @@ Bindings options:
 - `KORDEX_BINDINGS_ENABLE_QUICKJS`
 - `KORDEX_BINDINGS_ENABLE_V8`
 
-Example QuickJS build:
+Example QuickJS build from the umbrella repository:
 
 ```bash
-vix build \
-  --preset dev-ninja \
-  -- \
-  -DKORDEX_BINDINGS_ENABLE_QUICKJS=ON \
-  -DKORDEX_BINDINGS_ENABLE_NATIVE_ENGINE=OFF
+vix build --preset dev-ninja --build-target all -v -- \
+  -DKORDEX_ENABLE_QUICKJS=ON \
+  -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
+  -DKORDEX_BUILD_APP=ON
 ```
 
 ## Tests

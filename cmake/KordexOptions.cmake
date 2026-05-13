@@ -37,6 +37,31 @@ option(KORDEX_BUILD_TESTS "Build all Kordex tests" OFF)
 option(KORDEX_BUILD_EXAMPLES "Build all Kordex examples" OFF)
 
 # --------------------------------------------------------------------
+# JavaScript backend options
+# --------------------------------------------------------------------
+option(KORDEX_ENABLE_NATIVE_ENGINE "Enable the native placeholder engine" OFF)
+option(KORDEX_ENABLE_QUICKJS "Enable QuickJS JavaScript backend" ON)
+option(KORDEX_ENABLE_V8 "Enable V8 JavaScript backend" OFF)
+
+set(KORDEX_BINDINGS_ENABLE_NATIVE_ENGINE
+    ${KORDEX_ENABLE_NATIVE_ENGINE}
+    CACHE BOOL
+    "Enable native backend for Kordex Bindings"
+    FORCE)
+
+set(KORDEX_BINDINGS_ENABLE_QUICKJS
+    ${KORDEX_ENABLE_QUICKJS}
+    CACHE BOOL
+    "Enable QuickJS backend for Kordex Bindings"
+    FORCE)
+
+set(KORDEX_BINDINGS_ENABLE_V8
+    ${KORDEX_ENABLE_V8}
+    CACHE BOOL
+    "Enable V8 backend for Kordex Bindings"
+    FORCE)
+
+# --------------------------------------------------------------------
 # Install options
 # --------------------------------------------------------------------
 option(KORDEX_ENABLE_INSTALL "Generate install rules for Kordex umbrella" OFF)

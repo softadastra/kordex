@@ -18,6 +18,15 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
 # --------------------------------------------------------------------
+# Install Kordex executable
+# --------------------------------------------------------------------
+if(TARGET kordex)
+  install(
+      TARGETS kordex
+      RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+endif()
+
+# --------------------------------------------------------------------
 # Install project metadata
 # --------------------------------------------------------------------
 install(
