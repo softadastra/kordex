@@ -1,0 +1,324 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Optional tag to build/release, for example v0.2.1. If empty, uses the current ref."
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kordex-release-${{ github.workflow }}-${{ github.event.inputs.tag || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: build (${{ matrix.asset_os }} / ${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            asset_os: linux
+            arch: x86_64
+            exe: kordex
+            archive: tar.gz
+            asset: kordex-linux-x86_64.tar.gz
+            build_dir: build-linux
+            install_dir: install-linux
+
+          - os: macos-14
+            asset_os: macos
+            arch: arm64
+            exe: kordex
+            archive: tar.gz
+            asset: kordex-macos-arm64.tar.gz
+            build_dir: build-macos
+            install_dir: install-macos
+
+          - os: windows-2022
+            asset_os: windows
+            arch: x86_64
+            exe: kordex.exe
+            archive: zip
+            asset: kordex-windows-x86_64.zip
+            build_dir: build-windows
+            install_dir: install-windows
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Checkout tag from manual input
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git fetch --tags --force
+          git checkout "tags/${{ github.event.inputs.tag }}"
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Install dependencies on Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            pkg-config \
+            ninja-build \
+            ca-certificates \
+            git \
+            curl \
+            tar \
+            zip \
+            unzip \
+            libspdlog-dev \
+            libfmt-dev \
+            nlohmann-json3-dev \
+            libssl-dev \
+            zlib1g-dev
+
+      - name: Install dependencies on macOS
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          brew update
+          brew install \
+            ninja \
+            pkg-config \
+            spdlog \
+            fmt \
+            nlohmann-json \
+            openssl \
+            zlib
+
+      - name: Install dependencies on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          vcpkg install spdlog:x64-windows fmt:x64-windows nlohmann-json:x64-windows
+
+      - name: Configure on Linux and macOS
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          cmake -S . -B "${{ matrix.build_dir }}" -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="${GITHUB_WORKSPACE}/${{ matrix.install_dir }}" \
+            -DKORDEX_ENABLE_QUICKJS=ON \
+            -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
+            -DKORDEX_BUILD_APP=ON \
+            -DKORDEX_BUILD_TESTS=OFF \
+            -DKORDEX_BUILD_EXAMPLES=OFF \
+            -DKORDEX_ENABLE_INSTALL=ON
+
+      - name: Configure on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cmake -S . -B "${{ matrix.build_dir }}" -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/${{ matrix.install_dir }}" `
+            -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows `
+            -DKORDEX_ENABLE_QUICKJS=ON `
+            -DKORDEX_ENABLE_NATIVE_ENGINE=OFF `
+            -DKORDEX_BUILD_APP=ON `
+            -DKORDEX_BUILD_TESTS=OFF `
+            -DKORDEX_BUILD_EXAMPLES=OFF `
+            -DKORDEX_ENABLE_INSTALL=ON
+
+      - name: Build
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cmake --build "${{ matrix.build_dir }}" --target all --parallel 2
+
+      - name: Install
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cmake --install "${{ matrix.build_dir }}"
+
+      - name: Check binary
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            "${{ matrix.install_dir }}/bin/${{ matrix.exe }}" --version
+          else
+            "${{ matrix.install_dir }}/bin/${{ matrix.exe }}" --version
+          fi
+
+      - name: Create TypeScript smoke project
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          rm -rf smoke-app
+          mkdir -p smoke-app/src/utils
+
+          cat > smoke-app/kordex.json <<'EOF'
+          {
+            "name": "smoke-app",
+            "version": "0.1.0",
+            "entry": "src/main.ts"
+          }
+          EOF
+
+          cat > smoke-app/src/utils/greeting.ts <<'EOF'
+          export function greeting(name: string): string {
+            return "Hello " + name + " from Kordex";
+          }
+          EOF
+
+          cat > smoke-app/src/main.ts <<'EOF'
+          import { greeting } from "./utils/greeting.ts";
+
+          const name: string = "CI";
+          const message: string = greeting(name);
+
+          export default message;
+          EOF
+
+      - name: Run TypeScript smoke test
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          cd smoke-app
+
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            "../${{ matrix.install_dir }}/bin/${{ matrix.exe }}" run | tee output.txt
+          else
+            "../${{ matrix.install_dir }}/bin/${{ matrix.exe }}" run | tee output.txt
+          fi
+
+          grep "Hello CI from Kordex" output.txt
+
+      - name: Package on Linux and macOS
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          mkdir -p dist package-root/bin
+
+          cp "${{ matrix.install_dir }}/bin/${{ matrix.exe }}" package-root/bin/
+          cp README.md package-root/
+          cp LICENSE package-root/
+
+          tar -C package-root -czf "dist/${{ matrix.asset }}" .
+
+          ls -lah dist
+
+      - name: Package on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          New-Item -ItemType Directory -Force package-root/bin | Out-Null
+
+          Copy-Item "${{ matrix.install_dir }}/bin/${{ matrix.exe }}" package-root/bin/
+          Copy-Item README.md package-root/
+          Copy-Item LICENSE package-root/
+
+          Compress-Archive -Path package-root/* -DestinationPath "dist/${{ matrix.asset }}" -Force
+
+          Get-ChildItem dist
+
+      - name: Generate checksum on Linux and macOS
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          cd dist
+          sha256sum "${{ matrix.asset }}" > "${{ matrix.asset }}.sha256"
+          cat "${{ matrix.asset }}.sha256"
+
+      - name: Generate checksum on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $hash = Get-FileHash "dist/${{ matrix.asset }}" -Algorithm SHA256
+          "$($hash.Hash.ToLower())  ${{ matrix.asset }}" | Out-File -Encoding ascii "dist/${{ matrix.asset }}.sha256"
+          Get-Content "dist/${{ matrix.asset }}.sha256"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kordex-${{ matrix.asset_os }}-${{ matrix.arch }}
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    name: publish
+    needs: build
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist-all
+
+      - name: Flatten assets
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          mkdir -p dist
+
+          find dist-all -type f -name "kordex-*.tar.gz" -exec cp -f {} dist/ \;
+          find dist-all -type f -name "kordex-*.zip" -exec cp -f {} dist/ \;
+          find dist-all -type f -name "kordex-*.sha256" -exec cp -f {} dist/ \;
+
+          test -f dist/kordex-linux-x86_64.tar.gz
+          test -f dist/kordex-linux-x86_64.tar.gz.sha256
+          test -f dist/kordex-macos-arm64.tar.gz
+          test -f dist/kordex-macos-arm64.tar.gz.sha256
+          test -f dist/kordex-windows-x86_64.zip
+          test -f dist/kordex-windows-x86_64.zip.sha256
+
+          ls -lah dist
+
+      - name: Determine tag
+        id: tag
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload assets to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          files: dist/*
