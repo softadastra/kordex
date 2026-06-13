@@ -1,8 +1,8 @@
+# Kordex
+
 <table>
   <tr>
     <td valign="top" width="65%">
-
-<h1>Kordex</h1>
 
 <p>
   <a href="https://github.com/softadastra/kordex">
@@ -16,8 +16,13 @@
 <h3>A JavaScript and TypeScript runtime for reliable local-first applications.</h3>
 
 <p>
-  Kordex is a small JavaScript runtime built on top of <b>Vix.cpp</b> and <b>Softadastra</b>.
-  It is designed for local-first, offline-ready, permission-controlled applications.
+  Kordex is a small JavaScript and TypeScript runtime built on top of
+  <b>Vix.cpp</b> and <b>Softadastra</b>.
+</p>
+
+<p>
+  It is designed for local-first, offline-ready, permission-controlled applications
+  where JavaScript code can run close to the system while native capabilities stay explicit.
 </p>
 
 <p>
@@ -41,58 +46,73 @@ style="border-radius:50%; object-fit:cover;"
 
 ## What is Kordex?
 
-Kordex is a JavaScript runtime focused on reliability, local execution, and explicit permissions.
+Kordex is a JavaScript and TypeScript runtime focused on reliability, local execution, explicit permissions, and local-first application design.
 
-It lets you run JavaScript and TypeScript files, import local modules, use native standard modules, and build scripts into bundled output.
+It can run JavaScript and TypeScript files, resolve local imports, load JSON files, expose native standard modules, bundle scripts, and connect JavaScript code to native C++ capabilities.
 
-The long-term goal is to make JavaScript useful for applications that must continue working even when the network is unstable or unavailable.
+Kordex is not trying to be another general-purpose Node.js clone.
 
-Kordex is built for:
+Kordex is built for a different direction:
 
-- local-first applications
-- offline-ready tools
-- permission-controlled scripts
-- durable local workflows
-- embeddable JavaScript execution
+```txt
+JavaScript that can keep working locally first.
+```
+
+That means the runtime is designed around:
+
+- local execution
+- offline-ready workflows
+- explicit permissions
 - native modules written in C++
-- reliable applications built close to the system
+- durable local storage
+- embeddable runtime architecture
+- predictable system access
+- reliability-first application foundations
 
-## Why Kordex?
+## Why Kordex is different
 
-Most JavaScript runtimes are designed around online services, package ecosystems, and cloud-first workflows.
+Most JavaScript runtimes focus on online services, server workloads, web tooling, and package ecosystems.
 
 Kordex starts from a different question:
 
 ```txt
-What if the application must keep working locally first?
+What if the application must keep working even when the network is unstable or unavailable?
 ```
 
-That means:
+This is where Kordex becomes different.
 
-- the runtime should be small
-- native capabilities should be explicit
-- filesystem, environment, process, and network access should be controlled
-- local state should matter
-- offline behavior should be part of the design
-- the runtime should be easy to embed into C++ systems
+Kordex combines:
 
-Kordex uses:
+- **QuickJS** for JavaScript execution
+- **Vix.cpp** for the C++ runtime, build, system, and developer foundation
+- **Softadastra** for durable local-first storage, WAL, sync foundations, transport, discovery, and metadata
+- **Kordex Std** for native standard modules
+- **Kordex CLI** for a small developer-facing workflow
 
-- **Vix.cpp** as the C++ runtime and system foundation
-- **Softadastra** as the reliability, durability, WAL, sync, and local-first layer
-- **QuickJS** as the JavaScript engine backend
-- **Kordex Std** as the native standard module layer
-- **Kordex CLI** as the developer interface
+The goal is not only to execute JavaScript.
+
+The goal is to make JavaScript useful for reliable local-first applications.
+
+## Design direction
+
+Kordex should stay:
+
+```txt
+small
+modular
+local-first
+permission-aware
+embeddable
+reliable by design
+easy to test
+safe by default
+```
+
+The runtime should expose native capabilities only when the application explicitly asks for them.
 
 ## Quick example
 
-Create a file:
-
-```bash
-touch main.js
-```
-
-Add:
+Create `main.js`:
 
 ```js
 const name = "Kordex";
@@ -116,7 +136,7 @@ Hello from Kordex
 
 Kordex is built with the Vix.cpp CLI.
 
-Install Vix.cpp first:
+Install Vix.cpp first.
 
 ### Linux and macOS
 
@@ -130,7 +150,7 @@ curl -fsSL https://vixcpp.com/install.sh | bash
 irm https://vixcpp.com/install.ps1 | iex
 ```
 
-Verify Vix:
+Verify Vix.cpp:
 
 ```bash
 vix --version
@@ -146,11 +166,15 @@ vix build --preset dev-ninja --build-target all -v -- \
   -DKORDEX_ENABLE_INSTALL=ON
 ```
 
-Install the CLI locally:
+Build Kordex with Softadastra support:
 
 ```bash
-sudo cmake --install build-ninja --prefix /usr/local
-hash -r
+vix build --preset dev-ninja --build-target all -v -- \
+  -DKORDEX_ENABLE_QUICKJS=ON \
+  -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
+  -DKORDEX_BUILD_APP=ON \
+  -DKORDEX_ENABLE_INSTALL=ON \
+  -DKORDEX_ENABLE_STD_SOFTADASTRA=ON
 ```
 
 Verify Kordex:
@@ -175,6 +199,8 @@ run      Run a JavaScript or TypeScript file
 check    Check a source file
 build    Build a source file or project
 repl     Start an interactive Kordex session
+install  Install project dependencies
+update   Update project dependencies
 version  Show Kordex version
 ```
 
@@ -191,7 +217,19 @@ Global options:
     --dry-run    Show what would happen without executing
 ```
 
+Runtime permissions:
+
+```txt
+--allow-fs
+--allow-env
+--allow-net
+--allow-process
+--allow-softadastra
+```
+
 ## Run JavaScript
+
+Create `main.js`:
 
 ```js
 const runtime = "Kordex";
@@ -212,6 +250,8 @@ Kordex
 ```
 
 ## Run TypeScript
+
+Create `main.ts`:
 
 ```ts
 const name: string = "Kordex";
@@ -312,36 +352,60 @@ runtime
 
 Kordex exposes native modules through the `kordex:` prefix.
 
-Available modules:
-
-```txt
-kordex:console
-kordex:path
-kordex:fs
-kordex:env
-kordex:process
-kordex:timer
-kordex:crypto
-kordex:http
-```
-
-Safe utility modules can be enabled by default:
+Available standard modules:
 
 ```txt
 kordex:console
 kordex:path
 kordex:timer
 kordex:crypto
-```
-
-Sensitive modules are controlled by permissions:
-
-```txt
 kordex:fs
 kordex:env
 kordex:process
 kordex:http
+kordex:softadastra
 ```
+
+Safe utility modules can be available without special permissions:
+
+```txt
+kordex:console
+kordex:path
+kordex:timer
+kordex:crypto
+```
+
+Sensitive modules are controlled by explicit runtime permissions:
+
+```txt
+kordex:fs           -> --allow-fs
+kordex:env          -> --allow-env
+kordex:process      -> --allow-process
+kordex:http         -> --allow-net
+kordex:softadastra  -> --allow-softadastra
+```
+
+## Permissions
+
+Kordex does not expose sensitive native capabilities silently.
+
+A script must be started with the required permission flag before it can import modules that touch filesystem, environment variables, process execution, network-related helpers, or Softadastra local-first storage.
+
+Example:
+
+```bash
+kordex run main.js --allow-fs
+```
+
+Without the required permission, Kordex rejects the import.
+
+Example:
+
+```txt
+permission denied: module "kordex:softadastra" requires --allow-softadastra
+```
+
+This permission model is one of the main design differences between Kordex and traditional JavaScript runtimes.
 
 ## `kordex:console`
 
@@ -479,20 +543,9 @@ true
 false
 ```
 
-## Permissions
+## `kordex:fs`
 
-Kordex uses explicit permissions for sensitive native capabilities.
-
-Available permission flags:
-
-```txt
---allow-fs
---allow-env
---allow-net
---allow-process
-```
-
-### Filesystem access
+Filesystem access requires `--allow-fs`.
 
 ```js
 import {
@@ -537,9 +590,11 @@ true
 false
 ```
 
-Without `--allow-fs`, `kordex:fs` should not be available to the script.
+Without `--allow-fs`, `kordex:fs` is not available to the script.
 
-### Environment access
+## `kordex:env`
+
+Environment access requires `--allow-env`.
 
 ```js
 import { get, has, set, unset } from "kordex:env";
@@ -573,7 +628,9 @@ works
 false
 ```
 
-### Process access
+## `kordex:process`
+
+Process access requires `--allow-process`.
 
 ```js
 import { cwd, chdir, run } from "kordex:process";
@@ -600,7 +657,9 @@ Output shape:
 0
 ```
 
-### HTTP helpers
+## `kordex:http`
+
+HTTP helpers require `--allow-net`.
 
 `kordex:http` currently provides HTTP helper utilities, not real network requests.
 
@@ -658,7 +717,88 @@ true
 false
 ```
 
-## Check exports
+## `kordex:softadastra`
+
+Softadastra access requires `--allow-softadastra`.
+
+This module is the main reliability difference in Kordex.
+
+It connects JavaScript execution to the Softadastra C++ SDK, giving scripts access to a local-first storage foundation.
+
+Softadastra can be used to open a local store, write values, read values back, check keys, inspect the store size, and close the store.
+
+Create `main.js`:
+
+```js
+import * as softadastra from "kordex:softadastra";
+
+console.log("Opening Softadastra local store...");
+
+softadastra.open("durable", "kordex-example", ".kordex/data/example-store.wal");
+
+softadastra.put("runtime", "kordex");
+softadastra.put("feature", "local-first");
+
+const runtime = softadastra.get("runtime");
+const feature = softadastra.get("feature");
+
+console.log("runtime:", runtime);
+console.log("feature:", feature);
+console.log("has runtime:", softadastra.contains("runtime"));
+console.log("store size:", softadastra.size());
+
+softadastra.close();
+
+console.log("Softadastra store closed.");
+```
+
+Run:
+
+```bash
+kordex run main.js --allow-softadastra
+```
+
+Expected output:
+
+```txt
+Opening Softadastra local store...
+runtime: kordex
+feature: local-first
+has runtime: true
+store size: 2
+Softadastra store closed.
+```
+
+Without permission:
+
+```bash
+kordex run main.js
+```
+
+Expected error:
+
+```txt
+permission denied: module "kordex:softadastra" requires --allow-softadastra
+```
+
+### Why this matters
+
+Most JavaScript runtimes stop at executing JavaScript and exposing system APIs.
+
+Kordex goes further by connecting JavaScript to a local-first reliability layer.
+
+That means Kordex can become useful for applications where:
+
+- data must be written locally first
+- the app must survive unstable networks
+- offline mode is not an afterthought
+- local state matters
+- synchronization can be added later
+- system access must stay permission-controlled
+
+This is the long-term difference between Kordex and many other JavaScript runtimes.
+
+## Check module exports
 
 You can inspect a module:
 
@@ -678,6 +818,40 @@ Output:
 
 ```txt
 basename, dirname, extension, isAbsolute, isRelative, join, name, namespace, normalize, separator
+```
+
+## Examples
+
+The repository includes examples under `examples/`.
+
+```txt
+01-hello
+02-typescript
+03-relative-import
+04-extension-resolution
+05-directory-index
+06-json-import
+07-console
+08-path
+09-timer
+10-crypto
+11-fs
+12-env
+13-process
+14-http
+15-softadastra
+```
+
+Run an example:
+
+```bash
+kordex run examples/01-hello/main.js
+```
+
+Run the Softadastra example:
+
+```bash
+kordex run examples/15-softadastra/main.js --allow-softadastra
 ```
 
 ## Create a Kordex project
@@ -783,6 +957,12 @@ Output:
 3
 ```
 
+Use Softadastra from REPL eval:
+
+```bash
+kordex repl --eval "import * as s from 'kordex:softadastra'; console.log(typeof s.open)" --allow-softadastra
+```
+
 ## Package management
 
 Install dependencies from `kordex.json`:
@@ -828,7 +1008,8 @@ Project plugin commands can be declared in `kordex.json`.
           "fs": false,
           "env": false,
           "net": false,
-          "process": false
+          "process": false,
+          "softadastra": false
         }
       }
     ]
@@ -886,9 +1067,9 @@ CLI
 
 The runtime layer handles project-level and execution-level configuration.
 
-The bindings layer handles JavaScript engine execution.
+The bindings layer handles JavaScript engine execution, native module registration, module loading, TypeScript transformation, and JavaScript backend integration.
 
-The std layer exposes native modules.
+The std layer exposes native modules through the `kordex:` namespace.
 
 The CLI layer connects everything into a user-facing tool.
 
@@ -897,7 +1078,7 @@ The CLI layer connects everything into a user-facing tool.
 For:
 
 ```bash
-kordex run src/main.ts
+kordex run src/main.ts --allow-softadastra
 ```
 
 The pipeline is:
@@ -977,6 +1158,7 @@ Provides:
 - native function bridge
 - value conversion
 - module cache
+- permission-aware module loading
 
 ### `modules/std`
 
@@ -986,12 +1168,13 @@ Provides:
 
 - `kordex:console`
 - `kordex:path`
+- `kordex:timer`
+- `kordex:crypto`
 - `kordex:fs`
 - `kordex:env`
 - `kordex:process`
-- `kordex:timer`
-- `kordex:crypto`
 - `kordex:http`
+- `kordex:softadastra`
 
 ### `modules/cli`
 
@@ -1018,6 +1201,16 @@ vix build --preset dev-ninja --build-target all -v -- \
   -DKORDEX_ENABLE_QUICKJS=ON \
   -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
   -DKORDEX_BUILD_APP=ON
+```
+
+Development build with Softadastra support:
+
+```bash
+vix build --preset dev-ninja --build-target all -v -- \
+  -DKORDEX_ENABLE_QUICKJS=ON \
+  -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
+  -DKORDEX_BUILD_APP=ON \
+  -DKORDEX_ENABLE_STD_SOFTADASTRA=ON
 ```
 
 Build with tests:
@@ -1050,6 +1243,7 @@ kordex:fs with --allow-fs
 kordex:env with --allow-env
 kordex:process with --allow-process
 kordex:http with --allow-net
+kordex:softadastra with --allow-softadastra
 relative imports
 extension resolution
 JSON imports
@@ -1078,7 +1272,8 @@ Implemented foundations:
 - project discovery
 - plugin command discovery
 - install/update lock generation
-- integration tests
+- Softadastra standard module
+- integration examples
 
 Still planned:
 
@@ -1090,20 +1285,35 @@ Still planned:
 - native ES module execution
 - object/function value bridge
 - deeper Softadastra sync integration
+- richer local-first JavaScript APIs
 
-## Design philosophy
+## Roadmap direction
 
-Kordex should stay:
+Kordex is moving toward a runtime where JavaScript can be used for reliable local-first applications.
+
+The direction is:
 
 ```txt
-small
-modular
-local-first
-permission-aware
-embeddable
-reliable by design
-easy to test
-safe by default
+JavaScript execution
++ explicit native permissions
++ local durable state
++ offline-first behavior
++ optional synchronization
++ embeddable C++ foundation
+```
+
+This is the difference Kordex wants to bring.
+
+Not only:
+
+```txt
+run JavaScript
+```
+
+But:
+
+```txt
+run reliable local-first JavaScript applications
 ```
 
 ## Links
@@ -1114,8 +1324,6 @@ safe by default
 - Vix.cpp: https://github.com/vixcpp/vix
 - Softadastra: https://softadastra.com
 - Softadastra Engine: https://github.com/softadastra/softadastra
-
-The runtime should expose native capabilities only when the application explicitly asks for them.
 
 ## License
 

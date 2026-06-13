@@ -27,6 +27,11 @@ set(KORDEX_VIX_DEPS_DIR
     CACHE PATH
     "Local Vix dependencies directory")
 
+set(KORDEX_SOFTADASTRA_DEPS_DIR
+    "${KORDEX_DEPS_DIR}/softadastra"
+    CACHE PATH
+    "Local Softadastra dependencies directory")
+
 # --------------------------------------------------------------------
 # Helper
 # --------------------------------------------------------------------
@@ -303,6 +308,20 @@ if(KORDEX_ENABLE_STD_HTTP)
       vix_core
       "${KORDEX_VIX_DEPS_DIR}/core"
       vix::core)
+endif()
+
+# --------------------------------------------------------------------
+# Optional Softadastra dependencies used by Kordex Std
+# --------------------------------------------------------------------
+if(KORDEX_ENABLE_STD_SOFTADASTRA)
+  set(SDK_CPP_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+  set(SDK_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  set(SDK_CPP_INSTALL OFF CACHE BOOL "" FORCE)
+
+  kordex_add_local_dependency(
+      softadastra_sdk
+      "${KORDEX_SOFTADASTRA_DEPS_DIR}/sdk"
+      softadastra::sdk)
 endif()
 
 # --------------------------------------------------------------------

@@ -197,6 +197,7 @@ option(KORDEX_ENABLE_STD_PROCESS "Enable kordex:process module" ON)
 option(KORDEX_ENABLE_STD_TIMER "Enable kordex:timer module" ON)
 option(KORDEX_ENABLE_STD_CRYPTO "Enable kordex:crypto module" ON)
 option(KORDEX_ENABLE_STD_HTTP "Enable kordex:http module" ON)
+option(KORDEX_ENABLE_STD_SOFTADASTRA "Enable kordex:softadastra module" OFF)
 
 set(KORDEX_STD_ENABLE_CONSOLE
     ${KORDEX_ENABLE_STD_CONSOLE}
@@ -246,6 +247,11 @@ set(KORDEX_STD_ENABLE_HTTP
     "Enable kordex:http module"
     FORCE)
 
+set(KORDEX_STD_ENABLE_SOFTADASTRA
+    ${KORDEX_ENABLE_STD_SOFTADASTRA}
+    CACHE BOOL
+    "Enable kordex:softadastra module"
+    FORCE)
 # --------------------------------------------------------------------
 # CLI command options
 # --------------------------------------------------------------------
@@ -483,6 +489,12 @@ set(KORDEX_STD_FETCH_CORE
     ${KORDEX_FETCH_VIX_DEPS}
     CACHE BOOL
     "Auto-fetch vix::core if missing"
+    FORCE)
+
+set(KORDEX_STD_FETCH_SOFTADASTRA_SDK
+    OFF
+    CACHE BOOL
+    "Auto-fetch softadastra::sdk if missing"
     FORCE)
 
 set(KORDEX_STD_FETCH_TESTS

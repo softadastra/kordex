@@ -56,3 +56,6 @@
 [submodule "deps/vix/core"]
 	path = deps/vix/core
 	url = https://github.com/vixcpp/core.git
+[submodule "deps/softadastra/sdk"]
+	path = deps/softadastra/sdk
+	url = https://github.com/softadastra/sdk.git
