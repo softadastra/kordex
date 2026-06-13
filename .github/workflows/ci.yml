@@ -79,6 +79,11 @@ jobs:
             mingw-w64-ucrt-x86_64-toolchain
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-spdlog
+            mingw-w64-ucrt-x86_64-fmt
+            mingw-w64-ucrt-x86_64-nlohmann-json
+            mingw-w64-ucrt-x86_64-openssl
             zip
             unzip
             tar
@@ -94,13 +99,21 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             build-essential \
             cmake \
+            pkg-config \
             ninja-build \
             git \
             curl \
             ca-certificates \
             tar \
             gzip \
-            libasio-dev
+            zip \
+            unzip \
+            libasio-dev \
+            libspdlog-dev \
+            libfmt-dev \
+            nlohmann-json3-dev \
+            libssl-dev \
+            zlib1g-dev
 
       - name: Install macOS dependencies
         if: runner.os == 'macOS'
@@ -111,6 +124,12 @@ jobs:
           brew update
           brew install \
             ninja \
+            pkg-config \
+            spdlog \
+            fmt \
+            nlohmann-json \
+            openssl \
+            zlib \
             curl
 
       - name: Clean workspace
