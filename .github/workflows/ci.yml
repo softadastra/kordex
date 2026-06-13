@@ -141,7 +141,10 @@ jobs:
             "${{ matrix.build_dir }}" \
             "${{ matrix.install_dir }}" \
             smoke-app \
+            ci-deps \
+            ci-softadastra-install \
             /tmp/kordex-asio.tar.gz \
+            /tmp/asio.tar.gz \
             /tmp/asio-asio-1-30-2
 
       - name: Initialize submodules
@@ -212,6 +215,101 @@ jobs:
 
           test -f "${ASIO_INCLUDE_DIR}/asio.hpp"
 
+      - name: Fetch Softadastra low-level dependencies
+        if: matrix.softadastra == 'ON'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          mkdir -p ci-deps
+
+          git clone --depth 1 --branch main \
+            https://github.com/vixcpp/async.git \
+            ci-deps/async
+
+          git -C ci-deps/async submodule update --init --recursive --depth 1 || true
+
+          git clone --depth 1 --branch main \
+            https://github.com/softadastra/softadastra.git \
+            ci-deps/softadastra
+
+          git -C ci-deps/softadastra submodule sync --recursive
+          git -C ci-deps/softadastra submodule update --init --recursive --depth 1
+
+      - name: Prepare Asio for Softadastra async dependency
+        if: matrix.softadastra == 'ON'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          ASIO_VERSION="asio-1-30-2"
+          ASIO_ARCHIVE="/tmp/asio.tar.gz"
+          ASIO_SRC="/tmp/asio-${ASIO_VERSION}"
+          ASIO_INCLUDE_DIR="ci-deps/async/third_party/asio/include"
+
+          mkdir -p "${ASIO_INCLUDE_DIR}"
+
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            cp -R /usr/include/asio "${ASIO_INCLUDE_DIR}/" || true
+            cp /usr/include/asio.hpp "${ASIO_INCLUDE_DIR}/" || true
+          fi
+
+          if [ ! -f "${ASIO_INCLUDE_DIR}/asio.hpp" ]; then
+            curl -L --fail --retry 3 --retry-delay 2 \
+              -o "${ASIO_ARCHIVE}" \
+              "https://codeload.github.com/chriskohlhoff/asio/tar.gz/refs/tags/${ASIO_VERSION}"
+
+            tar -xzf "${ASIO_ARCHIVE}" -C /tmp
+
+            test -d "${ASIO_SRC}/asio/include/asio"
+            test -f "${ASIO_SRC}/asio/include/asio.hpp"
+
+            cp -R "${ASIO_SRC}/asio/include/asio" "${ASIO_INCLUDE_DIR}/"
+            cp "${ASIO_SRC}/asio/include/asio.hpp" "${ASIO_INCLUDE_DIR}/"
+          fi
+
+          test -f "${ASIO_INCLUDE_DIR}/asio.hpp"
+
+      - name: Build and install Softadastra low-level package
+        if: matrix.softadastra == 'ON'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          cmake -S ci-deps/async -B ci-deps/async/build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_INSTALL_PREFIX="${GITHUB_WORKSPACE}/ci-deps/install" \
+            -DVIX_ASYNC_BUILD_TESTS=OFF \
+            -DVIX_ASYNC_BUILD_EXAMPLES=OFF \
+            -DVIX_ENABLE_SANITIZERS=OFF
+
+          cmake --build ci-deps/async/build \
+            --config ${{ matrix.build_type }} \
+            --parallel 2
+
+          cmake --install ci-deps/async/build \
+            --config ${{ matrix.build_type }}
+
+          cmake -S ci-deps/softadastra -B ci-deps/softadastra/build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/ci-deps/install" \
+            -DCMAKE_INSTALL_PREFIX="${GITHUB_WORKSPACE}/ci-softadastra-install" \
+            -DSOFTADASTRA_BUILD_EXAMPLES=OFF \
+            -DSOFTADASTRA_BUILD_TESTS=OFF \
+            -DSOFTADASTRA_BUILD_CLI=ON \
+            -DSOFTADASTRA_BUILD_APPS=OFF \
+            -DSOFTADASTRA_BUILD_CLI_APP=OFF \
+            -DSOFTADASTRA_BUILD_NODE_APP=OFF \
+            -DSOFTADASTRA_INSTALL=ON \
+            -DSOFTADASTRA_WARNINGS_AS_ERRORS=ON
+
+          cmake --build ci-deps/softadastra/build \
+            --config ${{ matrix.build_type }} \
+            --parallel 2
+
+          cmake --install ci-deps/softadastra/build \
+            --config ${{ matrix.build_type }}
+
       - name: Configure Kordex on Linux and macOS
         if: runner.os != 'Windows'
         shell: bash
@@ -221,6 +319,7 @@ jobs:
           cmake -S . -B "${{ matrix.build_dir }}" -G Ninja \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DCMAKE_INSTALL_PREFIX="${GITHUB_WORKSPACE}/${{ matrix.install_dir }}" \
+            -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/ci-softadastra-install;${GITHUB_WORKSPACE}/ci-deps/install" \
             -DKORDEX_ENABLE_QUICKJS=ON \
             -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
             -DKORDEX_ENABLE_V8=OFF \
