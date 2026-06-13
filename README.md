@@ -21,7 +21,6 @@
 </p>
 
 <p>
-  <a href="https://github.com/softadastra/kordex"><b>Repository</b></a> ·
   <a href="https://github.com/vixcpp/vix"><b>Vix.cpp</b></a> ·
   <a href="https://softadastra.com"><b>Softadastra</b></a>
 </p>
@@ -1106,6 +1105,15 @@ reliable by design
 easy to test
 safe by default
 ```
+
+## Links
+
+- Repository: https://github.com/softadastra/kordex
+- Releases: https://github.com/softadastra/kordex/releases
+- Issues: https://github.com/softadastra/kordex/issues
+- Vix.cpp: https://github.com/vixcpp/vix
+- Softadastra: https://softadastra.com
+- Softadastra Engine: https://github.com/softadastra/softadastra
 
 The runtime should expose native capabilities only when the application explicitly asks for them.
 
