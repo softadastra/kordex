@@ -13,16 +13,15 @@
   </a>
 </p>
 
-<h3>A JavaScript runtime for reliable local-first applications.</h3>
+<h3>A JavaScript and TypeScript runtime for reliable local-first applications.</h3>
 
 <p>
-  Kordex is built on top of Vix.cpp and Softadastra.
-  It provides a JavaScript and TypeScript runtime layer designed for local-first,
-  offline-ready, and permission-controlled applications.
+  Kordex is a small JavaScript runtime built on top of <b>Vix.cpp</b> and <b>Softadastra</b>.
+  It is designed for local-first, offline-ready, permission-controlled applications.
 </p>
 
 <p>
-  <a href="https://github.com/softadastra/kordex"><b>Repo</b></a> ·
+  <a href="https://github.com/softadastra/kordex"><b>Repository</b></a> ·
   <a href="https://github.com/vixcpp/vix"><b>Vix.cpp</b></a> ·
   <a href="https://softadastra.com"><b>Softadastra</b></a>
 </p>
@@ -32,195 +31,113 @@
 <td valign="middle" width="25%" align="right">
 
 <img
-  src="https://res.cloudinary.com/dwjbed2xb/image/upload/v1778700533/kordex_kzrxcx.png"
-  width="260"
-  style="border-radius:50%; object-fit:cover;"
+src="https://res.cloudinary.com/dwjbed2xb/image/upload/v1778700533/kordex_kzrxcx.png"
+width="260"
+style="border-radius:50%; object-fit:cover;"
 />
 
 </td>
   </tr>
 </table>
 
-## Vision
+## What is Kordex?
 
-Kordex is not just another JavaScript runtime.
+Kordex is a JavaScript runtime focused on reliability, local execution, and explicit permissions.
 
-It is designed for reliable local-first applications where:
+It lets you run JavaScript and TypeScript files, import local modules, use native standard modules, and build scripts into bundled output.
 
-- local execution matters
-- offline behavior matters
-- durable state matters
-- sync and convergence matter
-- permissions must be explicit
-- native capabilities must be controlled
-- the runtime should remain modular and embeddable
+The long-term goal is to make JavaScript useful for applications that must continue working even when the network is unstable or unavailable.
+
+Kordex is built for:
+
+- local-first applications
+- offline-ready tools
+- permission-controlled scripts
+- durable local workflows
+- embeddable JavaScript execution
+- native modules written in C++
+- reliable applications built close to the system
+
+## Why Kordex?
+
+Most JavaScript runtimes are designed around online services, package ecosystems, and cloud-first workflows.
+
+Kordex starts from a different question:
+
+```txt
+What if the application must keep working locally first?
+```
+
+That means:
+
+- the runtime should be small
+- native capabilities should be explicit
+- filesystem, environment, process, and network access should be controlled
+- local state should matter
+- offline behavior should be part of the design
+- the runtime should be easy to embed into C++ systems
 
 Kordex uses:
 
-- **Vix** as the C++ runtime/system foundation
-- **Softadastra** as the durability, sync, WAL, and local-first reliability layer
-- **Kordex modules** as the JavaScript runtime, bindings, standard modules, and CLI
+- **Vix.cpp** as the C++ runtime and system foundation
+- **Softadastra** as the reliability, durability, WAL, sync, and local-first layer
+- **QuickJS** as the JavaScript engine backend
+- **Kordex Std** as the native standard module layer
+- **Kordex CLI** as the developer interface
 
-## Repository structure
+## Quick example
 
-```txt
-kordex/
-├── CMakeLists.txt
-├── cmake/
-├── docs/
-├── examples/
-├── modules/
-│   ├── runtime/
-│   ├── bindings/
-│   ├── std/
-│   └── cli/
-├── README.md
-├── CHANGELOG.md
-└── LICENSE
+Create a file:
+
+```bash
+touch main.js
 ```
 
-## Modules
+Add:
 
-### modules/runtime
+```js
+const name = "Kordex";
 
-Core runtime foundation.
+console.log("Hello from " + name);
+```
 
-Provides:
+Run it:
 
-- runtime configuration
-- runtime lifecycle
-- source file loading
-- module resolver
-- runtime loop
-- cancellation
-- timers
-- tasks
-- process facade
-- diagnostics
-- manifest loading
-- permission model foundation
+```bash
+kordex run main.js
+```
 
-### modules/bindings
+Output:
 
-Native bindings and JavaScript engine bridge.
+```txt
+Hello from Kordex
+```
 
-Provides:
-
-- engine abstraction
-- QuickJS backend
-- script execution
-- `eval()`
-- TypeScript loading
-- module loading
-- JSON modules
-- native module bridge
-- native function bridge
-- value conversion
-- module cache
-
-### modules/std
-
-Standard native modules exposed to scripts.
-
-Provides modules such as:
-
-- `kordex:console`
-- `kordex:fs`
-- `kordex:path`
-- `kordex:env`
-- `kordex:process`
-- `kordex:timer`
-- `kordex:crypto`
-- `kordex:http`
-
-Sensitive modules are controlled by runtime permissions.
-
-### modules/cli
-
-User-facing command-line interface.
-
-Provides:
-
-- `kordex init`
-- `kordex run`
-- `kordex repl`
-- `kordex check`
-- `kordex build`
-- `kordex install`
-- `kordex update`
-- `kordex version`
-- `kordex help`
-
-The CLI connects runtime, bindings, std modules, project discovery, permissions, plugin commands, and package lock generation.
-
-## Features
-
-- JavaScript execution with QuickJS
-- TypeScript loading and basic transpilation
-- `kordex run` for files or project entries
-- `kordex repl --eval`
-- Relative imports
-- Extension resolution
-- Directory `index.js` resolution
-- JSON imports
-- Standard modules through `kordex:` imports
-- Permission-gated modules
-- Project discovery via `kordex.json` or `package.json`
-- Build command with module bundling
-- Basic source map generation
-- Plugin commands from project configuration
-- `install` and `update` commands
-- `kordex.lock` generation
-- Integration tests for the final CLI workflow
-
-## Installation
+## Install
 
 Kordex is built with the Vix.cpp CLI.
 
-Install Vix using the official installer:
+Install Vix.cpp first:
 
-### Shell Linux/macOS
+### Linux and macOS
 
 ```bash
 curl -fsSL https://vixcpp.com/install.sh | bash
 ```
 
-### PowerShell Windows
+### Windows PowerShell
 
 ```powershell
 irm https://vixcpp.com/install.ps1 | iex
 ```
 
-Verify the installation:
+Verify Vix:
 
 ```bash
 vix --version
 ```
 
-## Quick start
-
-Build the full project with QuickJS enabled:
-
-```bash
-vix build --preset dev-ninja --build-target all -v -- \
-  -DKORDEX_ENABLE_QUICKJS=ON \
-  -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
-  -DKORDEX_BUILD_APP=ON
-```
-
-With tests enabled:
-
-```bash
-vix build --preset dev-ninja --build-target all -v -- \
-  -DKORDEX_ENABLE_QUICKJS=ON \
-  -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
-  -DKORDEX_BUILD_APP=ON \
-  -DKORDEX_BUILD_TESTS=ON
-
-vix tests -- --output-on-failure
-```
-
-Install the Kordex CLI locally:
+Then build Kordex:
 
 ```bash
 vix build --preset dev-ninja --build-target all -v -- \
@@ -228,24 +145,550 @@ vix build --preset dev-ninja --build-target all -v -- \
   -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
   -DKORDEX_BUILD_APP=ON \
   -DKORDEX_ENABLE_INSTALL=ON
+```
 
+Install the CLI locally:
+
+```bash
 sudo cmake --install build-ninja --prefix /usr/local
+hash -r
 ```
 
 Verify Kordex:
 
 ```bash
 kordex version
+kordex help
 ```
 
-### Create a project
+## CLI
+
+```txt
+kordex <command> [options] [args]
+```
+
+Available commands:
+
+```txt
+help     Show help
+init     Create a new Kordex project
+run      Run a JavaScript or TypeScript file
+check    Check a source file
+build    Build a source file or project
+repl     Start an interactive Kordex session
+version  Show Kordex version
+```
+
+Global options:
+
+```txt
+-h, --help       Show help
+-V, --version    Show version
+-v, --verbose    Enable verbose output
+    --debug      Enable debug output
+-q, --quiet      Disable normal output
+    --json       Render machine-readable JSON output
+    --no-color   Disable colored output
+    --dry-run    Show what would happen without executing
+```
+
+## Run JavaScript
+
+```js
+const runtime = "Kordex";
+
+console.log(runtime);
+```
+
+Run:
+
+```bash
+kordex run main.js
+```
+
+Output:
+
+```txt
+Kordex
+```
+
+## Run TypeScript
+
+```ts
+const name: string = "Kordex";
+
+function hello(value: string): string {
+  return "Hello from " + value;
+}
+
+console.log(hello(name));
+```
+
+Run:
+
+```bash
+kordex run main.ts
+```
+
+Output:
+
+```txt
+Hello from Kordex
+```
+
+TypeScript support is currently MVP-level. It performs basic checking and type stripping before sending JavaScript to the engine.
+
+## Use imports
+
+Create `message.js`:
+
+```js
+export function message() {
+  return "Import works";
+}
+```
+
+Create `main.js`:
+
+```js
+import { message } from "./message.js";
+
+console.log(message());
+```
+
+Run:
+
+```bash
+kordex run main.js
+```
+
+Output:
+
+```txt
+Import works
+```
+
+Extension resolution is supported:
+
+```js
+import { message } from "./message";
+
+console.log(message());
+```
+
+## JSON imports
+
+Create `user.json`:
+
+```json
+{
+  "name": "Kordex",
+  "type": "runtime"
+}
+```
+
+Create `main.js`:
+
+```js
+import user from "./user.json";
+
+console.log(user.name);
+console.log(user.type);
+```
+
+Run:
+
+```bash
+kordex run main.js
+```
+
+Output:
+
+```txt
+Kordex
+runtime
+```
+
+## Standard modules
+
+Kordex exposes native modules through the `kordex:` prefix.
+
+Available modules:
+
+```txt
+kordex:console
+kordex:path
+kordex:fs
+kordex:env
+kordex:process
+kordex:timer
+kordex:crypto
+kordex:http
+```
+
+Safe utility modules can be enabled by default:
+
+```txt
+kordex:console
+kordex:path
+kordex:timer
+kordex:crypto
+```
+
+Sensitive modules are controlled by permissions:
+
+```txt
+kordex:fs
+kordex:env
+kordex:process
+kordex:http
+```
+
+## `kordex:console`
+
+```js
+import { log, info, warn, error, debug } from "kordex:console";
+
+log("log works");
+info("info works");
+warn("warn works");
+error("error works");
+debug("debug works");
+```
+
+Run:
+
+```bash
+kordex run main.js
+```
+
+Output:
+
+```txt
+[log] log works
+[info] info works
+[warn] warn works
+[error] error works
+[debug] debug works
+```
+
+The global `console` object is also available:
+
+```js
+console.log("global console works");
+console.error("global console error works");
+```
+
+## `kordex:path`
+
+```js
+import {
+  normalize,
+  join,
+  dirname,
+  basename,
+  extension,
+  isAbsolute,
+  isRelative,
+  separator,
+} from "kordex:path";
+
+console.log(normalize("/tmp/kordex/../kordex/app"));
+console.log(join("/tmp", "kordex", "app"));
+console.log(dirname("/tmp/kordex/app/main.js"));
+console.log(basename("/tmp/kordex/app/main.js"));
+console.log(extension("/tmp/kordex/app/main.js"));
+console.log(isAbsolute("/tmp/kordex"));
+console.log(isRelative("./main.js"));
+console.log(separator);
+```
+
+Run:
+
+```bash
+kordex run main.js
+```
+
+Output on Linux/macOS:
+
+```txt
+/tmp/kordex/app
+/tmp/kordex/app
+/tmp/kordex/app
+main.js
+.js
+true
+true
+/
+```
+
+## `kordex:timer`
+
+```js
+import { now, sleep, unixMs } from "kordex:timer";
+
+const before = now();
+
+sleep(10);
+
+const after = now();
+
+console.log(after >= before);
+console.log(unixMs() > 0);
+```
+
+Run:
+
+```bash
+kordex run main.js
+```
+
+Output:
+
+```txt
+true
+true
+```
+
+## `kordex:crypto`
+
+```js
+import { hash, random, randomInt, equals } from "kordex:crypto";
+
+console.log(hash("kordex"));
+console.log(random() >= 0);
+console.log(random() < 1);
+console.log(randomInt(1, 10) >= 1);
+console.log(equals("hello", "hello"));
+console.log(equals("hello", "world"));
+```
+
+Run:
+
+```bash
+kordex run main.js
+```
+
+Output shape:
+
+```txt
+<hex hash>
+true
+true
+true
+true
+false
+```
+
+## Permissions
+
+Kordex uses explicit permissions for sensitive native capabilities.
+
+Available permission flags:
+
+```txt
+--allow-fs
+--allow-env
+--allow-net
+--allow-process
+```
+
+### Filesystem access
+
+```js
+import {
+  exists,
+  isFile,
+  isDirectory,
+  writeText,
+  readText,
+  remove,
+} from "kordex:fs";
+
+const file = "/tmp/kordex-fs-test.txt";
+
+console.log(exists("/tmp"));
+console.log(isDirectory("/tmp"));
+
+writeText(file, "Hello from kordex:fs");
+
+console.log(exists(file));
+console.log(isFile(file));
+console.log(readText(file));
+
+console.log(remove(file));
+console.log(exists(file));
+```
+
+Run:
+
+```bash
+kordex run main.js --allow-fs
+```
+
+Output:
+
+```txt
+true
+true
+true
+true
+Hello from kordex:fs
+true
+false
+```
+
+Without `--allow-fs`, `kordex:fs` should not be available to the script.
+
+### Environment access
+
+```js
+import { get, has, set, unset } from "kordex:env";
+
+console.log(has("HOME"));
+console.log(get("HOME") !== null);
+
+set("KORDEX_TEST_ENV", "works");
+
+console.log(has("KORDEX_TEST_ENV"));
+console.log(get("KORDEX_TEST_ENV"));
+
+unset("KORDEX_TEST_ENV");
+
+console.log(has("KORDEX_TEST_ENV"));
+```
+
+Run:
+
+```bash
+kordex run main.js --allow-env
+```
+
+Output shape:
+
+```txt
+true
+true
+true
+works
+false
+```
+
+### Process access
+
+```js
+import { cwd, chdir, run } from "kordex:process";
+
+console.log(cwd());
+
+chdir("/tmp");
+
+console.log(cwd());
+console.log(run("true"));
+```
+
+Run:
+
+```bash
+kordex run main.js --allow-process
+```
+
+Output shape:
+
+```txt
+/path/where/you-started
+/tmp
+0
+```
+
+### HTTP helpers
+
+`kordex:http` currently provides HTTP helper utilities, not real network requests.
+
+```js
+import {
+  GET,
+  POST,
+  isSuccess,
+  isRedirect,
+  isClientError,
+  isServerError,
+  statusText,
+  buildUrl,
+  normalizeMethod,
+  isMethod,
+} from "kordex:http";
+
+console.log(GET);
+console.log(POST);
+
+console.log(isSuccess(200));
+console.log(isRedirect(302));
+console.log(isClientError(404));
+console.log(isServerError(500));
+
+console.log(statusText(200));
+console.log(statusText(404));
+
+console.log(buildUrl("https://example.com/", "/api/users"));
+console.log(normalizeMethod("post"));
+console.log(isMethod("PATCH"));
+console.log(isMethod("CUSTOM"));
+```
+
+Run:
+
+```bash
+kordex run main.js --allow-net
+```
+
+Output:
+
+```txt
+GET
+POST
+true
+true
+true
+true
+OK
+Not Found
+https://example.com/api/users
+POST
+true
+false
+```
+
+## Check exports
+
+You can inspect a module:
+
+```js
+import * as path from "kordex:path";
+
+console.log(Object.keys(path).sort().join(", "));
+```
+
+Run:
+
+```bash
+kordex run main.js
+```
+
+Output:
+
+```txt
+basename, dirname, extension, isAbsolute, isRelative, join, name, namespace, normalize, separator
+```
+
+## Create a Kordex project
 
 ```bash
 kordex init app
 cd app
 ```
 
-Run the project:
+Run the default entry:
 
 ```bash
 kordex run
@@ -263,18 +706,14 @@ Run TypeScript:
 kordex run src/main.ts
 ```
 
-Evaluate code:
-
-```bash
-kordex repl --eval "1 + 2"
-```
-
 ## Project configuration
 
 Kordex looks for:
 
-- `kordex.json`
-- `package.json`
+```txt
+kordex.json
+package.json
+```
 
 Example `kordex.json`:
 
@@ -283,10 +722,6 @@ Example `kordex.json`:
   "name": "my-app",
   "version": "0.1.0",
   "entry": "src/main.ts",
-  "registry": "https://registry.vixcpp.com",
-  "dependencies": {
-    "kordex/std": "0.1.0"
-  },
   "scripts": {
     "dev": "kordex run src/main.ts",
     "build": "kordex build . --project"
@@ -302,115 +737,7 @@ kordex run
 
 Kordex resolves the entry from the project manifest.
 
-## JavaScript
-
-```javascript
-const name = "Kordex";
-
-"Hello " + name;
-```
-
-Run:
-
-```bash
-kordex run main.js
-```
-
-## TypeScript
-
-```typescript
-const name: string = "Kordex";
-
-function hello(value: string): string {
-  return "Hello " + value;
-}
-
-hello(name);
-```
-
-Run:
-
-```bash
-kordex run main.ts
-```
-
-TypeScript support is currently MVP-level. It performs basic checking and type stripping before sending JavaScript to the engine.
-
-## Imports
-
-Relative imports are supported:
-
-```javascript
-import { message } from "./lib/message.js";
-
-message;
-```
-
-Extension resolution is supported:
-
-```javascript
-import { message } from "./lib/message";
-```
-
-Directory index resolution is supported:
-
-```javascript
-import { name } from "./pkg";
-```
-
-This resolves:
-```
-./pkg/index.js
-```
-
-JSON imports are supported:
-
-```javascript
-import user from "./data/user.json";
-
-user.name;
-```
-
-## Standard modules
-
-Standard modules use the `kordex:` prefix.
-
-```javascript
-import { join } from "kordex:path";
-
-join("/tmp", "kordex", "app");
-```
-
-Some modules require explicit permissions.
-
-## Permissions
-
-Sensitive capabilities are disabled by default.
-
-Available flags:
-
-- `--allow-fs`
-- `--allow-env`
-- `--allow-net`
-- `--allow-process`
-
-Example:
-
-```javascript
-import { exists } from "kordex:fs";
-
-exists("/tmp");
-```
-
-Run with permission:
-
-```bash
-kordex run main.js --allow-fs
-```
-
-Without `--allow-fs`, `kordex:fs` is not available to the script.
-
-## Build
+## Build scripts
 
 Bundle a file:
 
@@ -430,16 +757,31 @@ Choose output file:
 kordex build . --project --out-dir dist --out-file app.js --force
 ```
 
-Generate source map:
+Generate a source map:
 
 ```bash
 kordex build . --project --source-map --force
 ```
 
 Output:
-```
+
+```txt
 dist/main.js
 dist/main.js.map
+```
+
+## REPL
+
+Evaluate code:
+
+```bash
+kordex repl --eval "1 + 2"
+```
+
+Output:
+
+```txt
+3
 ```
 
 ## Package management
@@ -462,12 +804,13 @@ Update dependencies:
 kordex update
 ```
 
-The package commands currently generate and update:
-```
+The current package workflow generates and updates:
+
+```txt
 kordex.lock
 ```
 
-The current implementation is a safe MVP. It resolves declared packages and lock metadata without automatically executing downloaded code.
+This is still an MVP. It resolves declared packages and lock metadata without automatically executing downloaded code.
 
 ## Plugin commands
 
@@ -508,36 +851,29 @@ kordex hi
 
 Plugin commands have isolated permissions and cannot override built-in commands.
 
-## CLI commands
+## Repository structure
 
 ```txt
-kordex init <name>
-kordex run [file]
-kordex repl --eval <source>
-kordex check <file>
-kordex build <file|project>
-kordex install [package[@version]]
-kordex update [package]
-kordex version
-kordex help
-```
-
-Global options:
-
-```txt
--h, --help       Show help
--V, --version    Show version
--v, --verbose    Enable verbose output
---debug      Enable debug output
--q, --quiet      Disable normal output
---json       Render machine-readable JSON output
---no-color   Disable colored output
---dry-run    Show what would happen without executing
+kordex/
+├── CMakeLists.txt
+├── cmake/
+├── docs/
+├── examples/
+├── modules/
+│   ├── runtime/
+│   ├── bindings/
+│   ├── std/
+│   └── cli/
+├── README.md
+├── CHANGELOG.md
+└── LICENSE
 ```
 
 ## Architecture
 
 Kordex follows a layered architecture:
+
+```txt
 CLI
 -> Runtime options
 -> Permission bridge
@@ -547,10 +883,14 @@ CLI
 -> QuickJS backend
 -> Standard native modules
 -> ScriptResult
+```
 
 The runtime layer handles project-level and execution-level configuration.
+
 The bindings layer handles JavaScript engine execution.
+
 The std layer exposes native modules.
+
 The CLI layer connects everything into a user-facing tool.
 
 ## Runtime pipeline
@@ -562,6 +902,8 @@ kordex run src/main.ts
 ```
 
 The pipeline is:
+
+```txt
 CLI parses command
 -> project/file resolved
 -> RuntimeOptions created
@@ -574,6 +916,7 @@ CLI parses command
 -> modules bundled internally
 -> QuickJS eval
 -> ScriptResult rendered
+```
 
 ## Build pipeline
 
@@ -584,6 +927,8 @@ kordex build . --project
 ```
 
 The pipeline is:
+
+```txt
 ProjectDiscovery
 -> resolve entry
 -> load script
@@ -593,6 +938,126 @@ ProjectDiscovery
 -> bundle modules
 -> write dist/main.js
 -> optionally write dist/main.js.map
+```
+
+## Modules
+
+### `modules/runtime`
+
+Core runtime foundation.
+
+Provides:
+
+- runtime configuration
+- runtime lifecycle
+- source file loading
+- module resolver
+- runtime loop
+- cancellation
+- timers
+- tasks
+- process facade
+- diagnostics
+- manifest loading
+- permission model foundation
+
+### `modules/bindings`
+
+Native bindings and JavaScript engine bridge.
+
+Provides:
+
+- engine abstraction
+- QuickJS backend
+- script execution
+- `eval()`
+- TypeScript loading
+- module loading
+- JSON modules
+- native module bridge
+- native function bridge
+- value conversion
+- module cache
+
+### `modules/std`
+
+Standard native modules exposed to scripts.
+
+Provides:
+
+- `kordex:console`
+- `kordex:path`
+- `kordex:fs`
+- `kordex:env`
+- `kordex:process`
+- `kordex:timer`
+- `kordex:crypto`
+- `kordex:http`
+
+### `modules/cli`
+
+User-facing command-line interface.
+
+Provides:
+
+- `kordex init`
+- `kordex run`
+- `kordex repl`
+- `kordex check`
+- `kordex build`
+- `kordex install`
+- `kordex update`
+- `kordex version`
+- `kordex help`
+
+## Build from source
+
+Development build:
+
+```bash
+vix build --preset dev-ninja --build-target all -v -- \
+  -DKORDEX_ENABLE_QUICKJS=ON \
+  -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
+  -DKORDEX_BUILD_APP=ON
+```
+
+Build with tests:
+
+```bash
+vix build --preset dev-ninja --build-target all -v -- \
+  -DKORDEX_ENABLE_QUICKJS=ON \
+  -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
+  -DKORDEX_BUILD_APP=ON \
+  -DKORDEX_BUILD_TESTS=ON
+```
+
+Run tests:
+
+```bash
+vix tests -- --output-on-failure
+```
+
+## Test checklist
+
+Use this checklist when validating the runtime:
+
+```txt
+global console
+kordex:console
+kordex:path
+kordex:timer
+kordex:crypto
+kordex:fs with --allow-fs
+kordex:env with --allow-env
+kordex:process with --allow-process
+kordex:http with --allow-net
+relative imports
+extension resolution
+JSON imports
+TypeScript loading
+build output
+project entry
+```
 
 ## Development status
 
@@ -627,66 +1092,22 @@ Still planned:
 - object/function value bridge
 - deeper Softadastra sync integration
 
-## Build options
+## Design philosophy
 
-Common options:
+Kordex should stay:
 
-- `KORDEX_BUILD_TESTS`
-- `KORDEX_BUILD_EXAMPLES`
-- `KORDEX_UMBRELLA_BUILD`
-
-Bindings options:
-
-- `KORDEX_BINDINGS_ENABLE_NATIVE_ENGINE`
-- `KORDEX_BINDINGS_ENABLE_QUICKJS`
-- `KORDEX_BINDINGS_ENABLE_V8`
-
-Example QuickJS build from the umbrella repository:
-
-```bash
-vix build --preset dev-ninja --build-target all -v -- \
-  -DKORDEX_ENABLE_QUICKJS=ON \
-  -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
-  -DKORDEX_BUILD_APP=ON
+```txt
+small
+modular
+local-first
+permission-aware
+embeddable
+reliable by design
+easy to test
+safe by default
 ```
 
-## Tests
-
-Run all tests:
-
-```bash
-vix tests -R kordex_cli_integration_tests
-```
-
-Run CLI integration tests:
-
-```bash
-vix tests -- --output-on-failure
-```
-
-The final CLI integration tests cover:
-
-- `kordex run`
-- `kordex repl --eval`
-- relative imports
-- JSON imports
-- standard modules
-- build output
-- permissions
-
-## Repositories
-
-Kordex is organized as a modular runtime project.
-
-Main modules:
-
-- `kordex-runtime`
-- `kordex-bindings`
-- `kordex-std`
-- `kordex-cli`
-
-The umbrella repository brings them together under:
-modules/
+The runtime should expose native capabilities only when the application explicitly asks for them.
 
 ## License
 
