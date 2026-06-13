@@ -1,0 +1,367 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: ["main", "dev"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kordex-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.os }} / ${{ matrix.build_type }} / softadastra=${{ matrix.softadastra }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            build_type: Debug
+            softadastra: OFF
+            build_dir: build-linux-debug
+            install_dir: install-linux-debug
+            exe: kordex
+
+          - os: ubuntu-24.04
+            build_type: Release
+            softadastra: OFF
+            build_dir: build-linux-release
+            install_dir: install-linux-release
+            exe: kordex
+
+          - os: ubuntu-24.04
+            build_type: Release
+            softadastra: ON
+            build_dir: build-linux-softadastra
+            install_dir: install-linux-softadastra
+            exe: kordex
+
+          - os: macos-14
+            build_type: Release
+            softadastra: OFF
+            build_dir: build-macos-release
+            install_dir: install-macos-release
+            exe: kordex
+
+          - os: windows-2022
+            build_type: Release
+            softadastra: OFF
+            build_dir: build-windows-release
+            install_dir: install-windows-release
+            exe: kordex.exe
+
+    steps:
+      - name: Checkout Kordex repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Setup MSYS2 on Windows
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            git
+            base-devel
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            zip
+            unzip
+            tar
+            curl
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            cmake \
+            ninja-build \
+            git \
+            curl \
+            ca-certificates \
+            tar \
+            gzip \
+            libasio-dev
+
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          brew update
+          brew install \
+            ninja \
+            curl
+
+      - name: Clean workspace
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          rm -rf \
+            "${{ matrix.build_dir }}" \
+            "${{ matrix.install_dir }}" \
+            smoke-app \
+            /tmp/kordex-asio.tar.gz \
+            /tmp/asio-asio-1-30-2
+
+      - name: Initialize submodules
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+          git submodule sync --recursive
+          git submodule update --init --recursive
+
+      - name: Verify required dependency layout
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          test -f deps/vix/utils/CMakeLists.txt
+          test -f deps/vix/async/CMakeLists.txt
+          test -f deps/vix/error/CMakeLists.txt
+          test -f deps/vix/log/CMakeLists.txt
+          test -f deps/vix/json/CMakeLists.txt
+          test -f deps/vix/fs/CMakeLists.txt
+          test -f deps/vix/path/CMakeLists.txt
+          test -f deps/vix/env/CMakeLists.txt
+          test -f deps/vix/process/CMakeLists.txt
+          test -f deps/vix/time/CMakeLists.txt
+
+          test -f modules/runtime/CMakeLists.txt
+          test -f modules/bindings/CMakeLists.txt
+          test -f modules/std/CMakeLists.txt
+          test -f modules/cli/CMakeLists.txt
+
+          if [ "${{ matrix.softadastra }}" = "ON" ]; then
+            test -f deps/softadastra/sdk/CMakeLists.txt
+          fi
+
+      - name: Prepare Asio for vix async
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          ASIO_VERSION="asio-1-30-2"
+          ASIO_ARCHIVE="/tmp/kordex-asio.tar.gz"
+          ASIO_SRC="/tmp/asio-${ASIO_VERSION}"
+          ASIO_INCLUDE_DIR="deps/vix/async/third_party/asio/include"
+
+          mkdir -p "${ASIO_INCLUDE_DIR}"
+
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            cp -R /usr/include/asio "${ASIO_INCLUDE_DIR}/" || true
+            cp /usr/include/asio.hpp "${ASIO_INCLUDE_DIR}/" || true
+          fi
+
+          if [ ! -f "${ASIO_INCLUDE_DIR}/asio.hpp" ]; then
+            curl -L --fail --retry 3 --retry-delay 2 \
+              -o "${ASIO_ARCHIVE}" \
+              "https://codeload.github.com/chriskohlhoff/asio/tar.gz/refs/tags/${ASIO_VERSION}"
+
+            tar -xzf "${ASIO_ARCHIVE}" -C /tmp
+
+            test -d "${ASIO_SRC}/asio/include/asio"
+            test -f "${ASIO_SRC}/asio/include/asio.hpp"
+
+            cp -R "${ASIO_SRC}/asio/include/asio" "${ASIO_INCLUDE_DIR}/"
+            cp "${ASIO_SRC}/asio/include/asio.hpp" "${ASIO_INCLUDE_DIR}/"
+          fi
+
+          test -f "${ASIO_INCLUDE_DIR}/asio.hpp"
+
+      - name: Configure Kordex on Linux and macOS
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          cmake -S . -B "${{ matrix.build_dir }}" -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_INSTALL_PREFIX="${GITHUB_WORKSPACE}/${{ matrix.install_dir }}" \
+            -DKORDEX_ENABLE_QUICKJS=ON \
+            -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
+            -DKORDEX_ENABLE_V8=OFF \
+            -DKORDEX_BUILD_RUNTIME=ON \
+            -DKORDEX_BUILD_BINDINGS=ON \
+            -DKORDEX_BUILD_STD=ON \
+            -DKORDEX_BUILD_CLI=ON \
+            -DKORDEX_BUILD_APP=ON \
+            -DKORDEX_BUILD_TESTS=OFF \
+            -DKORDEX_BUILD_EXAMPLES=OFF \
+            -DKORDEX_ENABLE_STD_HTTP=OFF \
+            -DKORDEX_ENABLE_STD_CRYPTO=OFF \
+            -DKORDEX_ENABLE_STD_SOFTADASTRA=${{ matrix.softadastra }} \
+            -DKORDEX_ENABLE_INSTALL=ON \
+            -DKORDEX_ENABLE_WARNINGS=ON \
+            -DKORDEX_ENABLE_SANITIZERS=OFF
+
+      - name: Configure Kordex on Windows
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          set -euxo pipefail
+
+          cmake -S . -B "${{ matrix.build_dir }}" -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_C_COMPILER=gcc \
+            -DCMAKE_CXX_COMPILER=g++ \
+            -DCMAKE_INSTALL_PREFIX="${GITHUB_WORKSPACE}/${{ matrix.install_dir }}" \
+            -DKORDEX_ENABLE_QUICKJS=ON \
+            -DKORDEX_ENABLE_NATIVE_ENGINE=OFF \
+            -DKORDEX_ENABLE_V8=OFF \
+            -DKORDEX_BUILD_RUNTIME=ON \
+            -DKORDEX_BUILD_BINDINGS=ON \
+            -DKORDEX_BUILD_STD=ON \
+            -DKORDEX_BUILD_CLI=ON \
+            -DKORDEX_BUILD_APP=ON \
+            -DKORDEX_BUILD_TESTS=OFF \
+            -DKORDEX_BUILD_EXAMPLES=OFF \
+            -DKORDEX_ENABLE_STD_HTTP=OFF \
+            -DKORDEX_ENABLE_STD_CRYPTO=OFF \
+            -DKORDEX_ENABLE_STD_SOFTADASTRA=OFF \
+            -DKORDEX_ENABLE_INSTALL=ON \
+            -DKORDEX_ENABLE_WARNINGS=ON \
+            -DKORDEX_ENABLE_SANITIZERS=OFF
+
+      - name: Build Kordex on Linux and macOS
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          cmake --build "${{ matrix.build_dir }}" \
+            --config ${{ matrix.build_type }} \
+            --target all \
+            --parallel 2
+
+      - name: Build Kordex on Windows
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          set -euxo pipefail
+
+          cmake --build "${{ matrix.build_dir }}" \
+            --config ${{ matrix.build_type }} \
+            --target all \
+            --parallel 2
+
+      - name: Install Kordex on Linux and macOS
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          cmake --install "${{ matrix.build_dir }}" \
+            --config ${{ matrix.build_type }}
+
+      - name: Install Kordex on Windows
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          set -euxo pipefail
+
+          cmake --install "${{ matrix.build_dir }}" \
+            --config ${{ matrix.build_type }}
+
+      - name: Check Kordex binary on Linux and macOS
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          "${{ matrix.install_dir }}/bin/${{ matrix.exe }}" --version
+
+      - name: Check Kordex binary on Windows
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          set -euxo pipefail
+
+          "${{ matrix.install_dir }}/bin/${{ matrix.exe }}" --version
+
+      - name: Create TypeScript smoke project
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          rm -rf smoke-app
+          mkdir -p smoke-app/src/utils
+
+          cat > smoke-app/kordex.json <<'EOF'
+          {
+            "name": "smoke-app",
+            "version": "0.1.0",
+            "entry": "src/main.ts"
+          }
+          EOF
+
+          cat > smoke-app/src/utils/greeting.ts <<'EOF'
+          export function greeting(name: string): string {
+            return "Hello " + name + " from Kordex";
+          }
+          EOF
+
+          cat > smoke-app/src/main.ts <<'EOF'
+          import { greeting } from "./utils/greeting.ts";
+
+          const name: string = "CI";
+          const message: string = greeting(name);
+
+          export default message;
+          EOF
+
+      - name: Run TypeScript smoke test on Linux and macOS
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          cd smoke-app
+          "../${{ matrix.install_dir }}/bin/${{ matrix.exe }}" run | tee output.txt
+          grep "Hello CI from Kordex" output.txt
+
+      - name: Run TypeScript smoke test on Windows
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          set -euxo pipefail
+
+          cd smoke-app
+          "../${{ matrix.install_dir }}/bin/${{ matrix.exe }}" run | tee output.txt
+          grep "Hello CI from Kordex" output.txt
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kordex-logs-${{ matrix.os }}-${{ matrix.build_type }}-softadastra-${{ matrix.softadastra }}
+          path: |
+            ${{ matrix.build_dir }}/CMakeCache.txt
+            ${{ matrix.build_dir }}/CMakeFiles/CMakeOutput.log
+            ${{ matrix.build_dir }}/CMakeFiles/CMakeError.log
+            ${{ matrix.build_dir }}/Testing/Temporary/LastTest.log
+          if-no-files-found: ignore
