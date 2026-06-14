@@ -75,3 +75,7 @@ install-kordex/
 dist/
 package-root/
 test-install/
+
+# npm package outputs
+npm/kordex/*.tgz
+npm/kordex/native/
