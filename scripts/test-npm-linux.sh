@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 MAIN_PACKAGE="${ROOT_DIR}/npm/kordex/kordex-0.1.0.tgz"
-LINUX_PACKAGE="${ROOT_DIR}/npm/linux-x64/kordex-linux-x64-0.1.0.tgz"
+LINUX_PACKAGE="${ROOT_DIR}/npm/linux-x64/softadastra-kordex-linux-x64-0.1.0.tgz"
 TEST_DIR="${HOME}/kordex-npm-test"
 
 if [ ! -f "${LINUX_PACKAGE}" ]; then

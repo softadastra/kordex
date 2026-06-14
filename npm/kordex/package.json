@@ -6,7 +6,7 @@
     "kordex": "bin/kordex.js"
   },
   "optionalDependencies": {
-    "@kordex/linux-x64": "0.1.0"
+    "@softadastra/kordex-linux-x64": "0.1.0"
   },
   "files": [
     "bin",

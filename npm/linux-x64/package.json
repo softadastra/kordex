@@ -1,10 +1,14 @@
 {
-  "name": "@kordex/linux-x64",
+  "name": "@softadastra/kordex-linux-x64",
   "version": "0.1.0",
   "description": "Linux x64 binary for Kordex",
   "main": "index.js",
-  "os": ["linux"],
-  "cpu": ["x64"],
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
   "files": [
     "bin",
     "index.js"

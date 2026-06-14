@@ -14,7 +14,7 @@ if [ ! -x "${BINARY}" ]; then
   exit 1
 fi
 
-echo "==> Packaging @kordex/linux-x64"
+echo "==> Packaging @softadastra/kordex-linux-x64"
 
 rm -rf "${LINUX_BIN_DIR}"
 mkdir -p "${LINUX_BIN_DIR}"
@@ -36,5 +36,5 @@ npm pack
 
 echo ""
 echo "Created:"
-echo "  ${LINUX_NPM_DIR}/kordex-linux-x64-0.1.0.tgz"
-echo "  ${MAIN_NPM_DIR}/kordex-0.1.0.tgz"
+ls -lah "${LINUX_NPM_DIR}"/*.tgz
+ls -lah "${MAIN_NPM_DIR}"/*.tgz
