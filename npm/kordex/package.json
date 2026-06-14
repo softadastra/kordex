@@ -1,6 +1,6 @@
 {
   "name": "kordex",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A JavaScript and TypeScript runtime for reliable local-first applications",
   "bin": {
     "kordex": "bin/kordex.js"
