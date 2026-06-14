@@ -68,3 +68,10 @@ vcpkg_installed/
 Testing/
 .cache/
 cmd.md
+
+# Build and release outputs
+build-ninja/
+install-kordex/
+dist/
+package-root/
+test-install/
