@@ -1,17 +1,27 @@
 #!/usr/bin/env node
 
 const { spawnSync } = require("child_process");
-const path = require("path");
 
 const platform = process.platform;
 const arch = process.arch;
 
-let binary;
+let packageName;
 
 if (platform === "linux" && arch === "x64") {
-  binary = path.join(__dirname, "..", "native", "linux-x64", "bin", "kordex");
+  packageName = "@kordex/linux-x64";
 } else {
   console.error(`Kordex does not support ${platform}-${arch} yet.`);
+  process.exit(1);
+}
+
+let binary;
+
+try {
+  const nativePackage = require(packageName);
+  binary = nativePackage.binary;
+} catch (error) {
+  console.error(`Failed to load ${packageName}.`);
+  console.error("Try reinstalling Kordex.");
   process.exit(1);
 }
 
