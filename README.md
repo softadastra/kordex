@@ -26,6 +26,7 @@
 </p>
 
 <p>
+  <a href="https://github.com/softadastra/kordex"><b>Repository</b></a> ·
   <a href="https://github.com/vixcpp/vix"><b>Vix.cpp</b></a> ·
   <a href="https://softadastra.com"><b>Softadastra</b></a>
 </p>
