@@ -2,8 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-NPM_DIR="${ROOT_DIR}/npm/kordex"
-NATIVE_DIR="${NPM_DIR}/native/linux-x64/bin"
+
+MAIN_NPM_DIR="${ROOT_DIR}/npm/kordex"
+LINUX_NPM_DIR="${ROOT_DIR}/npm/linux-x64"
+LINUX_BIN_DIR="${LINUX_NPM_DIR}/bin"
 BINARY="${ROOT_DIR}/install-kordex/bin/kordex"
 
 if [ ! -x "${BINARY}" ]; then
@@ -12,18 +14,27 @@ if [ ! -x "${BINARY}" ]; then
   exit 1
 fi
 
-rm -rf "${NPM_DIR}/native"
-mkdir -p "${NATIVE_DIR}"
+echo "==> Packaging @kordex/linux-x64"
 
-cp "${BINARY}" "${NATIVE_DIR}/kordex"
-chmod +x "${NATIVE_DIR}/kordex"
+rm -rf "${LINUX_BIN_DIR}"
+mkdir -p "${LINUX_BIN_DIR}"
 
-cd "${NPM_DIR}"
+cp "${BINARY}" "${LINUX_BIN_DIR}/kordex"
+chmod +x "${LINUX_BIN_DIR}/kordex"
 
-rm -f kordex-*.tgz
-
+cd "${LINUX_NPM_DIR}"
+rm -f *.tgz
 npm pack
 
-rm -rf "${NPM_DIR}/native"
+rm -rf "${LINUX_BIN_DIR}"
 
-echo "Created ${NPM_DIR}/kordex-0.1.0.tgz"
+echo "==> Packaging kordex wrapper"
+
+cd "${MAIN_NPM_DIR}"
+rm -f *.tgz
+npm pack
+
+echo ""
+echo "Created:"
+echo "  ${LINUX_NPM_DIR}/kordex-linux-x64-0.1.0.tgz"
+echo "  ${MAIN_NPM_DIR}/kordex-0.1.0.tgz"

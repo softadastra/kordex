@@ -79,3 +79,5 @@ test-install/
 # npm package outputs
 npm/kordex/*.tgz
 npm/kordex/native/
+npm/linux-x64/*.tgz
+npm/linux-x64/bin/
