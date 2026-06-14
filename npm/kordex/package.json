@@ -1,0 +1,14 @@
+{
+  "name": "kordex",
+  "version": "0.1.0",
+  "description": "A JavaScript and TypeScript runtime for reliable local-first applications",
+  "bin": {
+    "kordex": "bin/kordex.js"
+  },
+  "files": [
+    "bin",
+    "native",
+    "README.md"
+  ],
+  "license": "MIT"
+}
